@@ -1,0 +1,79 @@
+'''
+Algorithm: Detect Cycle Start in Linked List
+
+1. Initialize two pointers:
+   slow = head
+   fast = head
+
+2. Detect if cycle exists:
+   while fast and fast.next:
+       slow = slow.next
+       fast = fast.next.next
+
+       if slow == fast:
+           → Cycle detected
+           Go to Step 3
+
+3. Find the start of the cycle:
+   Move slow to head
+
+   while slow != fast:
+       slow = slow.next
+       fast = fast.next
+
+   → The meeting point is the start of the cycle
+   return slow
+
+4. If no cycle detected:
+   return None
+
+
+'''
+
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def detectCycle(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        slow=fast=head
+        
+        while fast and fast.next:
+            slow=slow.next
+            fast=fast.next.next
+            
+            if slow == fast:
+                break
+                
+        else:
+            return None
+        
+        while head != slow:
+            slow=slow.next
+            head=head.next
+        
+        return head
+        
+        
+'''
+Time Complexity: O(n)
+
+Reason:
+- In the first phase (cycle detection), slow and fast pointers traverse the list.
+- Even if a cycle exists, they meet within at most O(n) steps.
+- In the second phase (finding cycle start), both pointers move at most O(n) steps.
+- Since both phases are linear and not nested, total time remains O(n).
+
+------------------------------------------------
+
+Space Complexity: O(1)
+
+Reason:
+- Only a constant number of pointers are used (slow, fast, head).
+- No additional data structures (like hash sets) are used.
+- Memory usage does not depend on input size.
+- Hence, constant space → O(1).
+
+'''
