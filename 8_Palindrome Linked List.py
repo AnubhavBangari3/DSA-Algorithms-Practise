@@ -69,6 +69,7 @@ Only pointers used
 '''
 
 # Definition for singly-linked list.
+# Definition for singly-linked list.
 # class ListNode:
 #     def __init__(self, val=0, next=None):
 #         self.val = val
@@ -83,10 +84,10 @@ class Solution:
         prev=None
         #Reverse Second half
         while slow:
-            nextNode=slow.next
-            slow.next=prev
-            prev=slow
-            slow=nextNode
+            nextNode = slow.next      # Store next node (to not lose reference)
+            slow.next = prev          # Reverse the current node's pointer
+            prev = slow               # Move prev forward (new head of reversed list)
+            slow = nextNode           # Move to next node in original list
 
         #Compare
         left=head
