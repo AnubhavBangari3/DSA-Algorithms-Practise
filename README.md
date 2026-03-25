@@ -8,3 +8,4 @@ DSA Algorithms Practise
 5. First Missing Positive
 6. Shortest Distance to a Character
 7. Check Distances Between Same Letters
+8. Palindrome Linked List
