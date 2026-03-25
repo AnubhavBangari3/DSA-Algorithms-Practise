@@ -9,3 +9,5 @@ DSA Algorithms Practise
 6. Shortest Distance to a Character
 7. Check Distances Between Same Letters
 8. Palindrome Linked List
+9. Palindrome Number
+10. Reverse Linked List
