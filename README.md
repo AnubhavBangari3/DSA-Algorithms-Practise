@@ -14,3 +14,4 @@ DSA Algorithms Practise
 11. Maximum Twin Sum of a Linked List
 12. Middle of the Linked List
 13. Intersection of Two Linked Lists
+14. Minimum Index Sum of Two Lists
