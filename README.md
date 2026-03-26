@@ -13,3 +13,4 @@ DSA Algorithms Practise
 10. Reverse Linked List
 11. Maximum Twin Sum of a Linked List
 12. Middle of the Linked List
+13. Intersection of Two Linked Lists
