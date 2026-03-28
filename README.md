@@ -17,3 +17,4 @@ DSA Algorithms Practise
 14. Minimum Index Sum of Two Lists
 15. Reverse String Prefix
 16. Reorder List
+17. Number of Subsequences That Satisfy the Given Sum Condition
