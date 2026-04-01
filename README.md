@@ -21,3 +21,4 @@ DSA Algorithms Practise
 18. Longest Uncommon Subsequence II
 19. Longest Uncommon Subsequence I
 20. Longest Almost-Palindromic Substring
+21. Swapping Nodes in a Linked List
