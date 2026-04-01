@@ -20,3 +20,4 @@ DSA Algorithms Practise
 17. Number of Subsequences That Satisfy the Given Sum Condition
 18. Longest Uncommon Subsequence II
 19. Longest Uncommon Subsequence I
+20. Longest Almost-Palindromic Substring
