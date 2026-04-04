@@ -26,3 +26,6 @@ DSA Algorithms Practise
 23. Delete the Middle Node of a Linked List
 24. Length of Longest Subarray With at Most K Frequency
 25. Longest Substring with At Least K Repeating Characters
+26. Optimal Partition of String
+27. Longest Substring Without Repeating Characters
+28. Minimum Absolute Difference Between Two Values
