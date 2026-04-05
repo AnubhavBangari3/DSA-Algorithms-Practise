@@ -30,3 +30,4 @@ DSA Algorithms Practise
 27. Longest Substring Without Repeating Characters
 28. Minimum Absolute Difference Between Two Values
 29. Minimum XOR Path in a Grid
+30. Minimum Size Subarray in Infinite Array
