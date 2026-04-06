@@ -31,3 +31,4 @@ DSA Algorithms Practise
 28. Minimum Absolute Difference Between Two Values
 29. Minimum XOR Path in a Grid
 30. Minimum Size Subarray in Infinite Array
+31. Minimum Consecutive Cards to Pick Up
