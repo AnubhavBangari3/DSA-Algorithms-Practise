@@ -33,3 +33,4 @@ DSA Algorithms Practise
 30. Minimum Size Subarray in Infinite Array
 31. Minimum Consecutive Cards to Pick Up
 32. Count Partitions with Even Sum Difference
+33. Number of Sub-arrays With Odd Sum
