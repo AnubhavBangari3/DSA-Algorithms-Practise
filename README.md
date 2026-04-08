@@ -34,3 +34,4 @@ DSA Algorithms Practise
 31. Minimum Consecutive Cards to Pick Up
 32. Count Partitions with Even Sum Difference
 33. Number of Sub-arrays With Odd Sum
+34. Maximum Good Subarray Sum
