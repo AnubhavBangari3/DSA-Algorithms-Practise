@@ -36,3 +36,4 @@ DSA Algorithms Practise
 33. Number of Sub-arrays With Odd Sum
 34. Maximum Good Subarray Sum
 35. Maximum Trailing Zeros in a Cornered Path
+36. Missing Number
