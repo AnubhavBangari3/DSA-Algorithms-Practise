@@ -46,6 +46,7 @@ Cheat Sheets
 1. Hashing Patterns
 2. Two Pointers Patterns
 3. Sliding Window Patterns
-4. Prefix Sum
+4. Prefix Sum Patterns
 5. Binary Search Patterns
-6. Monotonic Stack
+6. Monotonic Stack Patterns
+7. BFS Patterns
