@@ -8,7 +8,7 @@ monotonic_stack_patterns.md
 
 ---
 
-# 🚀 Monotonic Stack Patterns (CP + Interview Guide)
+# Monotonic Stack Patterns (CP + Interview Guide)
 
 This guide covers **Monotonic Stack patterns** used in Competitive Programming and interviews.
 
@@ -22,7 +22,7 @@ Each pattern includes:
 
 ---
 
-# 🧠 What is a Monotonic Stack?
+# What is a Monotonic Stack?
 
 A **Monotonic Stack** is a stack that keeps elements in a specific order:
 
@@ -40,7 +40,7 @@ efficiently in **O(n)** time.
 
 ---
 
-# ⚡ When to Think of Monotonic Stack
+# When to Think of Monotonic Stack
 
 Use Monotonic Stack when you see:
 
@@ -55,7 +55,7 @@ Use Monotonic Stack when you see:
 
 ---
 
-# 🧩 Core Idea
+# Core Idea
 
 While processing each element:
 
