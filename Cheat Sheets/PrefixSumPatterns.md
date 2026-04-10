@@ -1,6 +1,6 @@
 
 
-# 🚀 Prefix Sum Patterns (CP + Interview Guide)
+# Prefix Sum Patterns (CP + Interview Guide)
 
 This guide covers **Prefix Sum patterns** used in Competitive Programming and interviews.
 
