@@ -329,7 +329,7 @@ def equal_0_1(nums):
 
 ---
 
-# 💡 Key Principle
+# Key Principle
 
 Hashing works best when:
 
