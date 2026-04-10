@@ -50,3 +50,4 @@ Cheat Sheets
 5. Binary Search Patterns
 6. Monotonic Stack Patterns
 7. BFS Patterns
+8. DFS Patterns
