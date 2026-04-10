@@ -37,3 +37,4 @@ DSA Algorithms Practise
 34. Maximum Good Subarray Sum
 35. Maximum Trailing Zeros in a Cornered Path
 36. Missing Number
+37. Single Number
