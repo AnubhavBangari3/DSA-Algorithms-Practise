@@ -40,3 +40,10 @@ DSA Algorithms Practise
 37. Single Number
 38. Find the Duplicate Number
 39. Find First and Last Position of Element in Sorted Array
+
+
+Cheat Sheets
+1. Hashing Patterns
+2. Two Pointers Patterns
+3. Sliding Window Patterns
+4. Binary Search Patterns
