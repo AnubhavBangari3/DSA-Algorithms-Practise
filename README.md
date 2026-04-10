@@ -38,3 +38,4 @@ DSA Algorithms Practise
 35. Maximum Trailing Zeros in a Cornered Path
 36. Missing Number
 37. Single Number
+38. Find the Duplicate Number
