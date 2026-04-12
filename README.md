@@ -42,6 +42,7 @@ DSA Algorithms Practise
 39. Find First and Last Position of Element in Sorted Array
 40. Valid Parentheses
 41. Generate Parentheses
+42. Check if a Parentheses String Can Be Valid
 
 
 Cheat Sheets
