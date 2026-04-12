@@ -40,6 +40,7 @@ DSA Algorithms Practise
 37. Single Number
 38. Find the Duplicate Number
 39. Find First and Last Position of Element in Sorted Array
+40. Valid Parentheses
 
 
 Cheat Sheets
