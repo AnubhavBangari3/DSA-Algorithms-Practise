@@ -312,8 +312,205 @@ Understanding reference behavior helps avoid memory issues
 ## Quick Summary for Interview
 
 List tuple set dict are core data structures
+
+
 Mutable vs immutable is frequently asked
+
+
 Scope local global nonlocal is very important
+
+
 Prefer isinstance over type
+
+
 GIL affects multithreading performance
+
+
 Memory management is automatic using reference counting and garbage collection
+
+
+---
+
+## GIL affects multithreading performance
+
+GIL stands for Global Interpreter Lock
+
+It is a lock inside the Python interpreter that allows only one thread to execute Python bytecode at a time
+
+Even if you create multiple threads, only one thread runs at a time on CPU
+
+### Why GIL exists
+
+Python uses simple memory management based on reference counting
+To keep it safe and avoid race conditions, GIL ensures only one thread modifies objects at a time
+
+This makes Python easier and safer internally
+
+### Impact on Performance
+
+CPU bound tasks
+Multiple threads do not run in parallel
+No real performance gain
+
+Example
+
+```python
+import threading
+
+def task():
+    for _ in range(10000000):
+        pass
+
+t1 = threading.Thread(target=task)
+t2 = threading.Thread(target=task)
+
+t1.start()
+t2.start()
+
+t1.join()
+t2.join()
+```
+
+Even with 2 threads, execution is almost same as single thread
+
+Reason
+GIL allows only one thread to execute at a time
+
+---
+
+I O bound tasks
+Threads work efficiently
+
+Example
+
+```python
+import threading
+import time
+
+def task():
+    time.sleep(2)
+    print("Done")
+
+t1 = threading.Thread(target=task)
+t2 = threading.Thread(target=task)
+
+t1.start()
+t2.start()
+```
+
+Both threads run concurrently because while one is waiting for I O, GIL is released
+
+---
+
+### Interview Insight
+
+GIL is the reason why Python multithreading is not suitable for CPU heavy tasks
+
+Use multiprocessing for CPU bound work
+Use multithreading for I O operations
+
+---
+
+## Memory management using reference counting and garbage collection
+
+Python automatically manages memory
+You do not need to manually allocate or free memory
+
+It mainly uses two techniques
+
+---
+
+### Reference Counting
+
+Each object in Python has a reference count
+This count represents how many variables are pointing to that object
+
+Example
+
+```python
+a = [1, 2, 3]
+b = a
+```
+
+Now both a and b point to same object
+Reference count becomes 2
+
+If we delete one reference
+
+```python
+del a
+```
+
+Reference count becomes 1
+
+When reference count becomes 0
+Python automatically deletes the object and frees memory
+
+---
+
+### Problem with reference counting
+
+It cannot handle cyclic references
+
+Example
+
+```python
+a = []
+b = []
+
+a.append(b)
+b.append(a)
+```
+
+Here both objects reference each other
+Reference count never becomes zero
+Memory is not freed
+
+---
+
+### Garbage Collection
+
+To solve this, Python uses garbage collection
+
+It detects such cyclic references and removes them
+
+Example
+
+```python
+import gc
+gc.collect()
+```
+
+Garbage collector finds unused objects and frees memory
+
+---
+
+### How Python stores memory
+
+All objects are stored in a private heap
+Python internally manages allocation and deallocation
+
+It also uses memory pools to optimize performance
+
+---
+
+### Interview Insight
+
+Python memory is automatic
+
+
+Reference counting handles most cases
+
+
+Garbage collection handles cyclic references
+
+
+Understanding references is important to avoid memory leaks
+
+---
+
+### Simple One Line Summary
+
+GIL allows only one thread to execute Python code at a time which limits CPU parallelism
+
+Memory management in Python is automatic using reference counting and garbage collection to free unused objects
