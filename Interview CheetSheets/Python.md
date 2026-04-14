@@ -2082,4 +2082,228 @@ Helpful in streaming and handling large datasets
 
 ## Section 8
 
+# Python Scripting and Automation
+
+Core topic as per job description
+Very high probability in interview
+Focus on real world usage and practical approach
+
+---
+
+## Writing Scripts for Automation
+
+Automation scripts are used to perform repetitive tasks automatically
+
+Examples
+File processing
+Data cleaning
+Sending emails
+System monitoring
+
+---
+
+### Example Script
+
+```python id="p4z1nh"
+import os
+
+files = os.listdir("data")
+
+for file in files:
+    if file.endswith(".txt"):
+        print("Processing", file)
+```
+
+---
+
+### Interview Insight
+
+Scripts should be reusable
+Handle errors properly
+Use logging instead of print
+
+---
+
+## Batch Processing Logic
+
+Batch processing means processing large data in chunks
+
+Used in
+ETL pipelines
+File processing
+Background jobs
+
+---
+
+### Example
+
+```python id="c9w1dn"
+data = list(range(10))
+
+batch_size = 3
+
+for i in range(0, len(data), batch_size):
+    batch = data[i:i+batch_size]
+    print("Processing batch", batch)
+```
+
+---
+
+### Interview Insight
+
+Prevents memory overload
+Improves performance
+Used in large scale systems
+
+---
+
+## Parsing Files CSV and JSON
+
+### CSV Parsing
+
+```python id="r2n4s8"
+import csv
+
+with open("data.csv", "r") as file:
+    reader = csv.DictReader(file)
+    for row in reader:
+        print(row["name"])
+```
+
+---
+
+### JSON Parsing
+
+```python id="g8q7kp"
+import json
+
+with open("data.json", "r") as file:
+    data = json.load(file)
+    print(data["name"])
+```
+
+---
+
+### Writing JSON
+
+```python id="3n9qpt"
+import json
+
+data = {"name": "Anubhav"}
+
+with open("data.json", "w") as file:
+    json.dump(data, file)
+```
+
+---
+
+### Interview Insight
+
+CSV for tabular data
+JSON for API data
+Always validate data before processing
+
+---
+
+## Data Transformation
+
+Converting data from one format to another
+
+Examples
+CSV to JSON
+Cleaning data
+Filtering records
+
+---
+
+### Example
+
+```python id="2qz8ps"
+import csv
+import json
+
+result = []
+
+with open("data.csv", "r") as file:
+    reader = csv.DictReader(file)
+    for row in reader:
+        result.append(row)
+
+with open("output.json", "w") as file:
+    json.dump(result, file)
+```
+
+---
+
+### Interview Insight
+
+Very common in backend systems
+Used in ETL pipelines
+
+---
+
+## Cron Jobs and Scheduled Jobs
+
+Used to run scripts automatically at fixed intervals
+
+Examples
+Daily reports
+Data sync
+Cleanup jobs
+
+---
+
+### Cron Example
+
+Runs script every day at midnight
+
+```python id="q9x2lb"
+0 0 * * * python script.py
+```
+
+---
+
+### Explanation
+
+Minute Hour Day Month Weekday
+
+---
+
+### Python Scheduler Example
+
+```python id="p3m1te"
+import time
+
+while True:
+    print("Running task")
+    time.sleep(60)
+```
+
+---
+
+### Interview Insight
+
+Cron is widely used in Linux systems
+Used for automation and background jobs
+
+---
+
+## Real World Scenario
+
+Process uploaded CSV file
+
+Steps
+
+Validate file
+Read file
+Transform data
+Store in database
+Log results
+
+---
+
+
+
 ## Section 9
+
+## Section 10
