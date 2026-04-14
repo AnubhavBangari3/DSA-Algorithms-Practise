@@ -1429,3 +1429,201 @@ Prefer composition over inheritance for flexibility
 
 ---
 ## Section 5
+
+# Exception Handling and Debugging
+
+Very high priority for interviews
+Especially important for real world experience discussion
+
+---
+
+## try except else finally
+
+Used to handle runtime errors and prevent program crash
+
+### Structure
+
+```python id="8x0c7k"
+try:
+    x = int("10")
+except ValueError:
+    print("Error occurred")
+else:
+    print("No error")
+finally:
+    print("Always runs")
+```
+
+---
+
+### Explanation
+
+try
+Code that may raise exception
+
+except
+Handles the error
+
+else
+Runs only if no exception occurs
+
+finally
+Always executes whether error occurs or not
+
+---
+
+### Interview Insight
+
+finally is used for cleanup operations like closing files or database connections
+
+---
+
+## Raising Exceptions
+
+Used to manually throw errors
+
+```python id="k3y6nd"
+def withdraw(balance, amount):
+    if amount > balance:
+        raise ValueError("Insufficient balance")
+    return balance - amount
+```
+
+---
+
+### Interview Insight
+
+Use raise when you want to enforce validation rules
+
+---
+
+## Custom Exceptions
+
+User defined exceptions for better clarity
+
+```python id="0q7a8m"
+class InvalidAgeError(Exception):
+    pass
+
+def check_age(age):
+    if age < 18:
+        raise InvalidAgeError("Age must be 18 or above")
+```
+
+---
+
+### Interview Insight
+
+Improves readability and helps in large systems
+
+---
+
+## Common Runtime Errors
+
+| Error             | Description            |
+| ----------------- | ---------------------- |
+| ZeroDivisionError | Division by zero       |
+| TypeError         | Wrong data type        |
+| ValueError        | Invalid value          |
+| IndexError        | Invalid index          |
+| KeyError          | Missing dictionary key |
+| AttributeError    | Invalid attribute      |
+
+---
+
+### Example
+
+```python id="h9w2vd"
+x = 10 / 0
+```
+
+---
+
+## Debugging Approach
+
+Very important interview question
+
+### Step by Step Approach
+
+Understand the error
+Read error message and stack trace
+
+Reproduce the issue
+Try to recreate the problem consistently
+
+Check logs and inputs
+Validate data being passed
+
+Add print or logging
+Track variable values
+
+Isolate the issue
+Break code into smaller parts
+
+Fix and test
+Verify solution works for all cases
+
+---
+
+### Example Scenario
+
+API is slow
+
+Approach
+
+Check database queries
+Look for N plus 1 problem
+Check API response time
+Add logs to identify bottleneck
+Optimize queries or add indexing
+
+---
+
+### Interview Insight
+
+Always explain structured approach
+Do not jump directly to solution
+
+---
+
+## Logging Basics
+
+Logging is used to track events and errors in application
+
+---
+
+### Basic Example
+
+```python id="r5psb1"
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+logging.info("Application started")
+logging.error("Error occurred")
+```
+
+---
+
+### Logging Levels
+
+| Level    | Purpose              |
+| -------- | -------------------- |
+| DEBUG    | Detailed information |
+| INFO     | General information  |
+| WARNING  | Something unexpected |
+| ERROR    | Serious issue        |
+| CRITICAL | Very severe error    |
+
+---
+
+### Interview Insight
+
+Logging is better than print for production systems
+Helps in debugging and monitoring
+
+---
+
+## Section 6
+
+## Section 7
