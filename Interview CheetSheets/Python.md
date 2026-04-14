@@ -2806,10 +2806,17 @@ Understanding this avoids bugs
 ## Final Quick Summary
 
 Decorators modify behavior without changing code
+
 Context managers handle resources safely
+
 Use comprehensions for clean code
+
 Use sets and dicts for performance
+
 Use generators for memory optimization
+
 Use caching for repeated computations
+
 Be careful with mutable defaults and references
+
 Understand is vs == and closure behavior
