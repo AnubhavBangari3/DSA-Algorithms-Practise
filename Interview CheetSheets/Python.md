@@ -2306,4 +2306,510 @@ Log results
 
 ## Section 9
 
-## Section 10
+# Python Advanced Concepts
+
+Used to test depth of understanding
+Focus on real world usage, performance and edge cases
+
+---
+
+## Decorators
+
+Decorator is a function that modifies behavior of another function without changing its code
+
+---
+
+### Example
+
+```python id="m2k8dp"
+def logger(func):
+    def wrapper():
+        print("Function started")
+        func()
+        print("Function ended")
+    return wrapper
+
+@logger
+def say_hello():
+    print("Hello")
+
+say_hello()
+```
+
+---
+
+### Explanation
+
+Decorator wraps original function
+Adds extra functionality before and after execution
+
+---
+
+### Interview Insight
+
+Used for logging authentication caching
+
+---
+
+## Context Managers using with
+
+Used for resource management like files or database connections
+
+---
+
+### Example
+
+```python id="z7n4jx"
+with open("test.txt", "r") as file:
+    data = file.read()
+```
+
+---
+
+### Custom Context Manager
+
+```python id="3f8p1c"
+class MyContext:
+    def __enter__(self):
+        print("Start")
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        print("End")
+
+with MyContext():
+    print("Inside block")
+```
+
+---
+
+### Interview Insight
+
+Automatically handles cleanup
+Prevents resource leaks
+
+---
+
+## List and Dictionary Comprehension
+
+Used for writing concise and efficient code
+
+---
+
+### List Comprehension
+
+```python id="9j3q5v"
+nums = [1, 2, 3, 4]
+squares = [x * x for x in nums]
+```
+
+---
+
+### Dictionary Comprehension
+
+```python id="6v2k8m"
+nums = [1, 2, 3]
+squares = {x: x * x for x in nums}
+```
+
+---
+
+### Interview Insight
+
+Faster and cleaner than loops
+Avoid overusing for complex logic
+
+---
+
+## Time Complexity Basics
+
+Measures efficiency of code
+
+---
+
+### Common Complexities
+
+| Operation         | Complexity |
+| ----------------- | ---------- |
+| Access list index | O of 1     |
+| Search in list    | O of n     |
+| Search in set     | O of 1     |
+| Search in dict    | O of 1     |
+
+---
+
+### Interview Insight
+
+Use set or dict for fast lookup
+Avoid nested loops where possible
+
+---
+
+## Efficient Loops
+
+Avoid unnecessary computations inside loops
+
+---
+
+### Example
+
+```python id="0x7v2k"
+nums = [1, 2, 3, 4]
+
+# inefficient
+result = []
+for x in nums:
+    result.append(x * x)
+
+# efficient
+result = [x * x for x in nums]
+```
+
+---
+
+### Interview Insight
+
+Use comprehensions
+Avoid repeated calculations
+
+---
+
+## Using Sets vs Lists
+
+| Feature          | List       | Set            |
+| ---------------- | ---------- | -------------- |
+| Duplicates       | Allowed    | Not allowed    |
+| Membership check | O of n     | O of 1         |
+| Order            | Maintained | Not guaranteed |
+
+---
+
+### Example
+
+```python id="3k2p9v"
+nums = [1, 2, 3, 2]
+unique = set(nums)
+```
+
+---
+
+### Interview Insight
+
+Use set for fast lookup and removing duplicates
+
+---
+
+## Memory Optimization using Generators
+
+Generators do not store full data in memory
+
+---
+
+### Example
+
+```python id="8m1r5x"
+gen = (x for x in range(1000000))
+```
+
+---
+
+### Interview Insight
+
+Use generators for large datasets
+Avoid loading everything in memory
+
+---
+
+## Caching Basics using LRU
+
+Used to store results of expensive function calls
+
+---
+
+### Example
+
+```python id="2n6p8z"
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def fib(n):
+    if n < 2:
+        return n
+    return fib(n-1) + fib(n-2)
+```
+
+---
+
+### Interview Insight
+
+Improves performance
+Used in repeated computations
+
+---
+
+## Data Flow Understanding
+
+Important for backend systems
+
+---
+
+### Typical Flow
+
+Input
+Validation
+Processing
+Storage
+Response
+
+---
+
+### Interview Insight
+
+Always explain flow clearly
+Shows system level thinking
+
+---
+
+## API Integration Flow
+
+---
+
+### Steps
+
+Send request
+Validate response
+Parse JSON
+Transform data
+Store result
+
+---
+
+### Interview Insight
+
+Handle failures properly
+Use retries and logging
+
+---
+
+## Validation Logic
+
+Ensures data correctness before processing
+
+---
+
+### Example
+
+```python id="4p2m8x"
+def validate(age):
+    if age < 0:
+        raise ValueError("Invalid age")
+```
+
+---
+
+### Interview Insight
+
+Always validate inputs
+Prevents system crashes
+
+---
+
+## Error Handling in Pipelines
+
+---
+
+### Example
+
+```python id="7m1k9v"
+try:
+    data = int("abc")
+except ValueError:
+    print("Invalid data")
+```
+
+---
+
+### Interview Insight
+
+Handle errors at each stage
+Log failures for debugging
+
+---
+
+## Mutable Default Arguments
+
+Common Python pitfall
+
+---
+
+### Problem
+
+```python id="2k9p4z"
+def add_item(item, lst=[]):
+    lst.append(item)
+    return lst
+
+print(add_item(1))
+print(add_item(2))
+```
+
+---
+
+### Explanation
+
+Default list is shared across calls
+
+---
+
+### Fix
+
+```python id="5p8x2m"
+def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst
+```
+
+---
+
+### Interview Insight
+
+Always use None as default
+
+---
+
+## is vs ==
+
+| Feature | is             | ==          |
+| ------- | -------------- | ----------- |
+| Meaning | Identity check | Value check |
+| Usage   | Same object    | Same value  |
+
+---
+
+### Example
+
+```python id="6x3k1v"
+a = [1, 2]
+b = [1, 2]
+
+print(a == b)
+print(a is b)
+```
+
+---
+
+### Interview Insight
+
+Use is for None checks
+Use == for value comparison
+
+---
+
+## List Copying Issue
+
+---
+
+### Problem
+
+```python id="9k4p2x"
+a = [1, 2, 3]
+b = a
+
+b[0] = 10
+print(a)
+```
+
+---
+
+### Fix
+
+```python id="3m7x8p"
+b = a.copy()
+```
+
+---
+
+### Interview Insight
+
+Assignment copies reference not data
+
+---
+
+## Late Binding in Closure
+
+---
+
+### Problem
+
+```python id="2v9p4x"
+funcs = []
+
+for i in range(3):
+    funcs.append(lambda: i)
+
+for f in funcs:
+    print(f())
+```
+
+---
+
+### Output
+
+All values same
+
+---
+
+### Fix
+
+```python id="7x2k9p"
+funcs = []
+
+for i in range(3):
+    funcs.append(lambda i=i: i)
+```
+
+---
+
+### Interview Insight
+
+Closures capture variable not value
+
+---
+
+## Variable Referencing
+
+Python variables store references not actual data
+
+---
+
+### Example
+
+```python id="4m2k8x"
+a = [1, 2]
+b = a
+
+b.append(3)
+print(a)
+```
+
+---
+
+### Interview Insight
+
+Both variables point to same object
+Understanding this avoids bugs
+
+---
+
+## Final Quick Summary
+
+Decorators modify behavior without changing code
+Context managers handle resources safely
+Use comprehensions for clean code
+Use sets and dicts for performance
+Use generators for memory optimization
+Use caching for repeated computations
+Be careful with mutable defaults and references
+Understand is vs == and closure behavior
