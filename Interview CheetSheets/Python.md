@@ -1874,4 +1874,212 @@ Process data
 
 ## Section 7
 
+# Generators and Iterators
+
+Medium to high probability topic
+Strong differentiator in interviews
+
+---
+
+## Iterator vs Iterable
+
+### Iterable
+
+An object that can be looped over
+
+Examples
+list tuple string set dictionary
+
+---
+
+### Iterator
+
+An object that produces values one by one
+
+---
+
+### Difference Table
+
+| Feature    | Iterable                  | Iterator                     |
+| ---------- | ------------------------- | ---------------------------- |
+| Definition | Object that can be looped | Object that generates values |
+| Methods    | has iter                  | has iter and next            |
+| Memory     | Stores all data           | Does not store all data      |
+| Example    | list tuple                | iterator from list           |
+
+---
+
+### Example
+
+```python id="c2v5nm"
+my_list = [1, 2, 3]
+
+it = iter(my_list)
+
+print(next(it))
+print(next(it))
+```
+
+---
+
+### Interview Insight
+
+All iterators are iterable
+Not all iterables are iterators
+
+---
+
+## iter and next methods
+
+These are core methods behind iteration
+
+---
+
+### iter
+
+Returns iterator from iterable
+
+### next
+
+Fetches next value
+
+---
+
+### Example
+
+```python id="6n3jta"
+nums = [1, 2, 3]
+it = iter(nums)
+
+print(next(it))
+print(next(it))
+print(next(it))
+```
+
+---
+
+### Custom Iterator Example
+
+```python id="y7o9d3"
+class Counter:
+    def __init__(self, max):
+        self.max = max
+        self.current = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current < self.max:
+            self.current += 1
+            return self.current
+        else:
+            raise StopIteration
+
+c = Counter(3)
+for num in c:
+    print(num)
+```
+
+---
+
+### Interview Insight
+
+StopIteration is used to end iteration
+
+---
+
+## Generators using yield
+
+Generators produce values one at a time using yield
+
+---
+
+### Example
+
+```python id="l6y6cb"
+def count(n):
+    for i in range(n):
+        yield i
+
+for num in count(3):
+    print(num)
+```
+
+---
+
+### Explanation
+
+yield pauses function and remembers state
+Next call resumes from last position
+
+---
+
+### Interview Insight
+
+Generators are memory efficient
+Used for large datasets
+
+---
+
+## Generator vs List
+
+### Comparison Table
+
+| Feature   | Generator                 | List              |
+| --------- | ------------------------- | ----------------- |
+| Memory    | Low                       | High              |
+| Execution | Lazy                      | Immediate         |
+| Storage   | Does not store all values | Stores all values |
+| Speed     | Slower per item           | Faster access     |
+| Use Case  | Large data                | Small data        |
+
+---
+
+### Example
+
+```python id="y3vsvh"
+gen = (x for x in range(1000000))
+lst = [x for x in range(1000000)]
+```
+
+---
+
+### Interview Insight
+
+Generators avoid memory overload
+Lists are faster for repeated access
+
+---
+
+## Real Use Cases
+
+Reading large files line by line
+
+```python id="zqkzrx"
+def read_file(file):
+    for line in file:
+        yield line
+```
+
+---
+
+Processing large data streams
+
+Pagination in APIs
+
+Pipeline processing
+
+---
+
+### Interview Insight
+
+Generators are widely used in backend systems
+Helpful in streaming and handling large datasets
+
+---
+
+
 ## Section 8
+
+## Section 9
