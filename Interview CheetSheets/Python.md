@@ -1626,4 +1626,252 @@ Helps in debugging and monitoring
 
 ## Section 6
 
+# File Handling in Python
+
+High probability topic based on job description
+Very important for real world backend work
+
+---
+
+## File Modes
+
+Used while opening files
+
+| Mode | Description          |
+| ---- | -------------------- |
+| r    | Read file            |
+| w    | Write file overwrite |
+| a    | Append to file       |
+| rb   | Read binary          |
+
+---
+
+### Example
+
+```python id="3kz9nl"
+file = open("test.txt", "r")
+content = file.read()
+file.close()
+```
+
+---
+
+### Best Practice
+
+Use with statement to automatically close file
+
+```python id="9v7yq1"
+with open("test.txt", "r") as file:
+    content = file.read()
+```
+
+---
+
+### Interview Insight
+
+w will overwrite file
+a will append
+Always use with to avoid memory leaks
+
+---
+
+## Reading Files
+
+### read
+
+Reads entire file
+
+```python id="sx5d4c"
+with open("test.txt", "r") as file:
+    data = file.read()
+```
+
+---
+
+### readline
+
+Reads one line
+
+```python id="wuvnq4"
+with open("test.txt", "r") as file:
+    line = file.readline()
+```
+
+---
+
+### readlines
+
+Reads all lines as list
+
+```python id="k7bq3m"
+with open("test.txt", "r") as file:
+    lines = file.readlines()
+```
+
+---
+
+### Interview Insight
+
+Use read for small files
+Use readline for large files to save memory
+
+---
+
+## Writing Files
+
+```python id="3q1pmb"
+with open("test.txt", "w") as file:
+    file.write("Hello World")
+```
+
+---
+
+### Append Example
+
+```python id="d4y5la"
+with open("test.txt", "a") as file:
+    file.write("New line")
+```
+
+---
+
+### Interview Insight
+
+write replaces content
+append adds to existing content
+
+---
+
+## CSV Handling
+
+Used for structured data
+
+### Reading CSV
+
+```python id="y62b3o"
+import csv
+
+with open("data.csv", "r") as file:
+    reader = csv.reader(file)
+    for row in reader:
+        print(row)
+```
+
+---
+
+### Writing CSV
+
+```python id="3sv0m9"
+import csv
+
+with open("data.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(["name", "age"])
+    writer.writerow(["Anubhav", 25])
+```
+
+---
+
+### Interview Insight
+
+CSV is widely used for data exchange
+Use csv module for efficient parsing
+
+---
+
+## XLSX Handling Basics
+
+Handled using libraries like openpyxl or pandas
+
+---
+
+### Using openpyxl
+
+```python id="5yphb8"
+from openpyxl import load_workbook
+
+wb = load_workbook("data.xlsx")
+sheet = wb.active
+
+for row in sheet.iter_rows(values_only=True):
+    print(row)
+```
+
+---
+
+### Using pandas
+
+```python id="s6u7v9"
+import pandas as pd
+
+df = pd.read_excel("data.xlsx")
+print(df.head())
+```
+
+---
+
+### Interview Insight
+
+openpyxl for low level control
+pandas for data analysis
+
+---
+
+## File Validation Logic
+
+Important in real projects
+
+### Common Checks
+
+File exists
+File type validation
+File size validation
+Content validation
+
+---
+
+### Example
+
+```python id="f8n4hz"
+import os
+
+file_path = "data.csv"
+
+if not os.path.exists(file_path):
+    print("File not found")
+
+elif not file_path.endswith(".csv"):
+    print("Invalid file type")
+
+else:
+    print("Valid file")
+```
+
+---
+
+### Interview Insight
+
+Always validate file before processing
+Prevents crashes and improves reliability
+
+---
+
+## Real World Scenario Example
+
+User uploads CSV file
+
+Steps
+
+Check file exists
+Validate extension
+Read file safely
+Handle exceptions
+Process data
+
+---
+
+
+
 ## Section 7
+
+## Section 8
