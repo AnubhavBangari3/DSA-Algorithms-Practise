@@ -514,3 +514,202 @@ Understanding references is important to avoid memory leaks
 GIL allows only one thread to execute Python code at a time which limits CPU parallelism
 
 Memory management in Python is automatic using reference counting and garbage collection to free unused objects
+
+---
+# Collections Deep Dive Cheat Sheet
+
+Interview focused quick revision with tables and clear examples
+
+---
+
+## List vs Tuple Cheat Sheet
+
+| Feature        | List            | Tuple       |
+| -------------- | --------------- | ----------- |
+| Mutability     | Mutable         | Immutable   |
+| Syntax         | square brackets | parentheses |
+| Performance    | Slower          | Faster      |
+| Memory         | More memory     | Less memory |
+| Modification   | Allowed         | Not allowed |
+| Use Case       | Dynamic data    | Fixed data  |
+| Dictionary Key | Not allowed     | Allowed     |
+
+Example
+
+```python
+my_list = [1, 2, 3]
+my_list.append(4)
+
+my_tuple = (1, 2, 3)
+```
+
+Interview Insight
+Tuple is preferred when data should not change and performance matters
+List is preferred when frequent updates are required
+
+---
+
+## Set Operations Cheat Sheet
+
+| Operation    | Symbol       | Description            | Example   |
+| ------------ | ------------ | ---------------------- | --------- |
+| Union        | vertical bar | Combines elements      | a or b    |
+| Intersection | ampersand    | Common elements        | a and b   |
+| Difference   | minus        | Elements in a not in b | a minus b |
+
+Example
+
+```python
+a = {1, 2, 3}
+b = {3, 4, 5}
+
+print(a | b)
+print(a & b)
+print(a - b)
+```
+
+Interview Insight
+Set operations are fast because they use hashing
+Useful for removing duplicates and checking membership
+
+---
+
+## Dictionary Operations Cheat Sheet
+
+| Operation      | Method      | Description                 | Example         |
+| -------------- | ----------- | --------------------------- | --------------- |
+| Access safely  | get         | Avoids error if key missing | d.get key       |
+| Update         | update      | Add or modify values        | d.update        |
+| Default values | defaultdict | Auto assign default         | defaultdict int |
+
+Example
+
+```python
+my_dict = {"name": "Anubhav", "age": 25}
+
+print(my_dict.get("name"))
+print(my_dict.get("city", "Not Found"))
+
+my_dict.update({"age": 26})
+
+from collections import defaultdict
+d = defaultdict(int)
+d["a"] += 1
+```
+
+Interview Insight
+get prevents KeyError
+defaultdict is very useful in counting problems
+
+---
+
+## Shallow Copy vs Deep Copy
+
+| Feature        | Shallow Copy      | Deep Copy                 |
+| -------------- | ----------------- | ------------------------- |
+| Copy Level     | Top level only    | Full nested copy          |
+| Nested Objects | Shared reference  | Independent               |
+| Performance    | Faster            | Slower                    |
+| Use Case       | Simple structures | Complex nested structures |
+
+---
+
+### Shallow Copy Example
+
+```python
+import copy
+
+a = [[1, 2], [3, 4]]
+b = copy.copy(a)
+
+b[0][0] = 10
+
+print(a)
+```
+
+Explanation
+Inner list is shared
+Changing b also changes a
+
+---
+
+### Deep Copy Example
+
+```python
+import copy
+
+a = [[1, 2], [3, 4]]
+b = copy.deepcopy(a)
+
+b[0][0] = 10
+
+print(a)
+```
+
+Explanation
+Completely separate objects
+Changing b does not affect a
+
+---
+
+Interview Insight
+Shallow copy copies reference
+Deep copy copies actual data
+
+---
+
+## Time Complexity Cheat Sheet
+
+### List
+
+| Operation           | Complexity |
+| ------------------- | ---------- |
+| Membership check    | O of n     |
+| Insert at end       | O of 1     |
+| Insert at beginning | O of n     |
+| Delete              | O of n     |
+
+---
+
+### Set
+
+| Operation        | Complexity |
+| ---------------- | ---------- |
+| Membership check | O of 1     |
+| Insert           | O of 1     |
+| Delete           | O of 1     |
+
+---
+
+### Dictionary
+
+| Operation        | Complexity |
+| ---------------- | ---------- |
+| Membership check | O of 1     |
+| Insert           | O of 1     |
+| Delete           | O of 1     |
+
+---
+
+Interview Insight
+
+List is slower for search and insert at beginning
+
+Set and Dictionary are faster due to hashing
+
+---
+
+## Final Quick Summary
+
+Tuple is faster and immutable
+
+List is flexible and mutable
+
+Set is best for uniqueness and fast lookup
+
+Dictionary is best for key value mapping
+
+Use deep copy when working with nested structures
+
+Time complexity is important for writing optimized code
+---
