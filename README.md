@@ -46,6 +46,9 @@ DSA Algorithms Practise
 43. Valid Parenthesis String
 
 
+Interview Cheat Sheets
+1. Python
+
 Cheat Sheets
 1. Hashing Patterns
 2. Two Pointers Patterns
