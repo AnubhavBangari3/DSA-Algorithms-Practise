@@ -4,7 +4,7 @@ Very high priority
 Almost always asked in interview screening rounds
 
 ---
-
+## Section 1
 ## Data Types in Python
 
 Python provides built in data structures to store and manipulate data
@@ -516,6 +516,7 @@ GIL allows only one thread to execute Python code at a time which limits CPU par
 Memory management in Python is automatic using reference counting and garbage collection to free unused objects
 
 ---
+## Section 2
 # Collections Deep Dive Cheat Sheet
 
 Interview focused quick revision with tables and clear examples
@@ -713,3 +714,217 @@ Use deep copy when working with nested structures
 
 Time complexity is important for writing optimized code
 ---
+
+## Section 3
+
+# Python Functions Deep Dive
+
+Important interview topic
+Focus on understanding behavior and real use cases
+
+---
+
+## Types of Arguments in Python
+
+Python supports multiple types of arguments in functions
+
+### Positional Arguments
+
+Values are assigned based on position
+
+```python
+def add(a, b):
+    return a + b
+
+print(add(2, 3))
+```
+
+---
+
+### Keyword Arguments
+
+Arguments are passed using parameter names
+
+```python
+def add(a, b):
+    return a + b
+
+print(add(a=2, b=3))
+```
+
+---
+
+### Default Arguments
+
+Default value is used if no argument is passed
+
+```python
+def greet(name="Guest"):
+    print(name)
+
+greet()
+greet("Anubhav")
+```
+
+---
+
+### args
+
+Used to pass variable number of positional arguments
+
+```python
+def total(*args):
+    return sum(args)
+
+print(total(1, 2, 3, 4))
+```
+
+---
+
+### kwargs
+
+Used to pass variable number of keyword arguments
+
+```python
+def details(**kwargs):
+    print(kwargs)
+
+details(name="Anubhav", age=25)
+```
+
+---
+
+## Argument Types Cheat Sheet
+
+| Type       | How Passed          | Flexibility    | Example             |
+| ---------- | ------------------- | -------------- | ------------------- |
+| Positional | By position         | Fixed          | add(2, 3)           |
+| Keyword    | By name             | Flexible order | add(a=2, b=3)       |
+| Default    | Predefined value    | Optional       | greet()             |
+| args       | Multiple positional | Very flexible  | total(1, 2, 3)      |
+| kwargs     | Multiple keyword    | Very flexible  | details(name value) |
+
+---
+
+### Interview Insight
+
+args is used when number of inputs is unknown
+kwargs is used when input is key value pairs
+Default arguments avoid errors when values are missing
+
+---
+
+## Lambda Functions
+
+Anonymous functions without name
+
+Used for short and simple operations
+
+```python
+square = lambda x: x * x
+print(square(5))
+```
+
+---
+
+### With Sorting
+
+```python
+data = [(1, 3), (2, 1), (4, 2)]
+sorted_data = sorted(data, key=lambda x: x[1])
+print(sorted_data)
+```
+
+---
+
+### Interview Insight
+
+Used when function is small and used once
+Cannot contain multiple statements
+Mostly used with map filter sorted
+
+---
+
+## First Class Functions
+
+Functions are treated like variables
+
+They can be assigned passed or returned
+
+```python
+def greet():
+    return "Hello"
+
+x = greet
+print(x())
+```
+
+---
+
+### Passing Function as Argument
+
+```python
+def apply(func, value):
+    return func(value)
+
+def square(x):
+    return x * x
+
+print(apply(square, 5))
+```
+
+---
+
+### Interview Insight
+
+Python treats functions as objects
+This enables higher order programming
+
+---
+
+## Closures
+
+A closure is a function that remembers variables from its outer scope even after the outer function has finished execution
+
+```python
+def outer(x):
+    def inner(y):
+        return x + y
+    return inner
+
+add_five = outer(5)
+print(add_five(3))
+```
+
+---
+
+### Explanation
+
+outer function creates variable x
+inner function uses x
+Even after outer finishes inner still remembers x
+
+---
+
+### Real Use Case
+
+```python
+def multiplier(n):
+    def multiply(x):
+        return x * n
+    return multiply
+
+double = multiplier(2)
+print(double(10))
+```
+
+---
+
+### Interview Insight
+
+Closures help in data hiding
+Used in decorators and functional programming
+
+---
+
+## Section 4
