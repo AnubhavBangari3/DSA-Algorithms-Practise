@@ -45,6 +45,8 @@ DSA Algorithms Practise
 42. Check if a Parentheses String Can Be Valid
 43. Valid Parenthesis String
 44. Move Zeroes
+45. Contains Duplicate
+
 
 
 Interview Cheat Sheets
