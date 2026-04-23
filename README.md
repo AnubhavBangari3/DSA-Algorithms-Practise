@@ -46,6 +46,7 @@ DSA Algorithms Practise
 43. Valid Parenthesis String
 44. Move Zeroes
 45. Contains Duplicate
+46. Apply Operations to an Array
 
 
 
