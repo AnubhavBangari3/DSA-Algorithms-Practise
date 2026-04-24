@@ -48,6 +48,7 @@ DSA Algorithms Practise
 45. Contains Duplicate
 46. Apply Operations to an Array 
 47. Teemo Attacking
+48. Binary Search
 
 
 
