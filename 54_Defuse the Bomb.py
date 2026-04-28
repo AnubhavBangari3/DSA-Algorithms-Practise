@@ -86,7 +86,8 @@ O(n)
 Reason:
 Result array is used
 
-
+(i + j) % n → move forward circularly
+(i - j + n) % n → move backward circularly
 '''
 class Solution:
     def decrypt(self, code, k):
