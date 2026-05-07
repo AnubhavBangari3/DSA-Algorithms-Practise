@@ -128,4 +128,4 @@ class Solution:
                 tails[index] = num
 
         # Length of tails = LIS length
-        return len(tails)
+        return len(tails) 
