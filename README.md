@@ -61,6 +61,7 @@ DSA Algorithms Practise
 58. Interleaving String
 59. Can I Win
 60. Longest Increasing Subsequence
+61. 132 Pattern
 
 
 
