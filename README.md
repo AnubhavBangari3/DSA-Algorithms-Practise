@@ -62,6 +62,7 @@ DSA Algorithms Practise
 59. Can I Win
 60. Longest Increasing Subsequence
 61. 132 Pattern
+62. Lexicographical Numbers
 
 
 
