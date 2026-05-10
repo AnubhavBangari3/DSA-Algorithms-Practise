@@ -64,6 +64,8 @@ DSA Algorithms Practise
 61. 132 Pattern
 62. Lexicographical Numbers
 63. Employee Importance
+64. Count Servers that Communicate
+65. Longest Increasing Path in a Matrix
 
 
 
