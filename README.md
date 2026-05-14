@@ -72,6 +72,7 @@ DSA Algorithms Practise
 69. Delete and Earn
 70. Largest Sum of Averages
 71. Minimum Amount of Time to Fill Cups
+72. Delete Greatest Value in Each Row
 
 
 
