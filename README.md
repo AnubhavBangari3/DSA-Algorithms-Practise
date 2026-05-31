@@ -76,7 +76,7 @@ DSA Algorithms Practise
 73. Delete Greatest Value in Each Row
 74. Check If N and Its Double Exist
 75. Longest Substring Without Repeating Characters
-
+76. Check if One String Swap Can Make Strings Equal
 
 
 

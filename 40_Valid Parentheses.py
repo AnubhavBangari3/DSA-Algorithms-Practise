@@ -98,33 +98,26 @@ O(n) → stack in worst case (all opening brackets)
 class Solution:
     def isValid(self, s):
         # Stack to store opening brackets
-        stack = []
-        
+        stack = []       
         # Mapping of closing to opening brackets
         mapping = {
             ')': '(',
             '}': '{',
             ']': '['
-        }
-        
+        }       
         # Traverse each character
-        for ch in s:
-            
+        for ch in s:          
             # If opening bracket → push
             if ch in '({[':
-                stack.append(ch)
-            
+                stack.append(ch)          
             else:
                 # If stack empty → no matching opening
                 if not stack:
-                    return False
-                
+                    return False              
                 # Check if top matches
                 if stack[-1] != mapping[ch]:
-                    return False
-                
+                    return False             
                 # Pop matched opening
-                stack.pop()
-        
+                stack.pop()      
         # If stack empty → valid
         return len(stack) == 0
