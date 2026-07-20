@@ -1,0 +1,40 @@
+class Solution:
+    def customSortString(self, order: str, s: str) -> str:
+
+        # Stores the final custom sorted string.
+        answer = ""
+
+        # Add characters in the same order as given in 'order'.
+        for ch in order:
+
+            # Append the current character as many times
+            # as it appears in 's'.
+            for _ in range(s.count(ch)):
+                answer += ch
+
+        # Append the remaining characters that are
+        # not present in 'order'.
+        for ch in s:
+            if ch not in order:
+                answer += ch
+
+        return answer
+    
+'''
+Algorithm
+
+1. Initialize an empty answer string.
+2. Traverse every character in 'order'.
+3. Count how many times the current character appears in 's'.
+4. Append that character to the answer exactly that many times.
+5. Traverse 's' again.
+6. Append every character that does not appear in 'order'.
+7. Return the final string.
+
+Pattern:
+Hashing + Custom Ordering
+
+Time Complexity: O(|order| × |s|)
+
+Space Complexity: O(1) (excluding the output string)
+'''
