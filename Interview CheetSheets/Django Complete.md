@@ -3612,3 +3612,119 @@ The browser automatically sends the cookie with every request, and the server ve
 - Best for traditional Django web applications.
 - REST APIs usually prefer **JWT Authentication**.
 
+## What are ViewSets in DRF?
+
+A **ViewSet** combines the logic for multiple API operations into a **single class**.
+
+Instead of writing separate views for **GET, POST, PUT, DELETE**, a ViewSet provides built-in actions like `list()`, `create()`, `retrieve()`, `update()`, and `destroy()`.
+
+---
+
+## Example
+
+```python
+from rest_framework.viewsets import ModelViewSet
+
+class EmployeeViewSet(ModelViewSet):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+```
+
+That's all! DRF automatically provides CRUD operations.
+
+---
+
+## View vs ViewSet
+
+| View | ViewSet |
+|------|----------|
+| One view per endpoint | One class for all CRUD operations |
+| More code | Less code |
+| Manual URL mapping | Usually used with Routers |
+
+---
+
+## Interview Insight
+
+`ModelViewSet` combines:
+
+- List
+- Retrieve
+- Create
+- Update
+- Partial Update
+- Delete
+
+in one class.
+
+---
+
+## Quick Summary
+
+- ViewSet combines multiple related views.
+- Reduces boilerplate code.
+- Commonly used with Routers.
+
+## What are Routers in DRF?
+
+A **Router** automatically generates URL patterns for a **ViewSet**.
+
+Without routers, you have to write every URL manually.
+
+---
+
+## Example
+
+### ViewSet
+
+```python
+class EmployeeViewSet(ModelViewSet):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+```
+
+### Router
+
+```python
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register("employees", EmployeeViewSet)
+
+urlpatterns = router.urls
+```
+
+Automatically creates
+
+```
+GET     /employees/
+POST    /employees/
+GET     /employees/1/
+PUT     /employees/1/
+PATCH   /employees/1/
+DELETE  /employees/1/
+```
+
+---
+
+## SimpleRouter vs DefaultRouter
+
+| SimpleRouter | DefaultRouter |
+|--------------|---------------|
+| Generates CRUD URLs | Generates CRUD URLs + API Root Page |
+| No API root | Includes browsable API root (`/`) |
+
+---
+
+## Interview Insight
+
+- **ViewSet** defines the API logic.
+- **Router** creates the URLs automatically.
+
+---
+
+## Quick Summary
+
+- Routers generate URLs automatically.
+- Used together with ViewSets.
+- `DefaultRouter` is the most commonly used router in DRF.
