@@ -3110,3 +3110,158 @@ Basic Authentication should always be used with **HTTPS**.
 - Uses Base64 encoding.
 - Must be used over HTTPS.
 
+## What are the Disadvantages of Basic Authentication?
+
+Basic Authentication sends the **username and password with every request** (Base64 encoded).
+
+### Disadvantages
+
+- Credentials are sent with every request.
+- Base64 is **encoding**, not encryption.
+- Slower because the server verifies credentials every time.
+- Must always be used over HTTPS.
+
+---
+
+## Quick Summary
+
+- Sends credentials on every request.
+- Less secure than Token/JWT Authentication.
+- Suitable only for simple or internal applications.
+
+## What is Session Authentication?
+
+Session Authentication is a **stateful authentication mechanism** where the server stores user session information.
+
+After login, the server creates a **Session ID**, which is stored in the browser as a cookie.
+
+Every request sends this Session ID back to the server.
+
+---
+
+## Flow
+
+```
+Login
+   │
+   ▼
+Server creates Session
+   │
+   ▼
+Session ID stored in Cookie
+   │
+   ▼
+Every request sends Session ID
+   │
+   ▼
+Server verifies Session
+```
+
+---
+
+## Quick Summary
+
+- Server stores user session.
+- Browser stores Session ID.
+- Stateful authentication.
+
+## Pros and Cons of Session Authentication
+
+### Advantages
+
+- Username/password sent only once.
+- Faster than Basic Authentication.
+- Built into Django.
+
+### Disadvantages
+
+- Server must maintain sessions.
+- Difficult to scale across multiple servers.
+- Not ideal for mobile apps or multiple frontends.
+
+---
+
+## Interview Insight
+
+Session Authentication is commonly used for **traditional Django websites**, while REST APIs usually prefer **JWT/Token Authentication**.
+
+---
+
+## Quick Summary
+
+- Good for web applications.
+- Not ideal for scalable REST APIs.
+
+## What is Token Authentication?
+
+Token Authentication is a **stateless authentication mechanism**.
+
+After login, the server generates a **token**, and the client sends that token with every request.
+
+The server validates the token instead of checking username and password.
+
+---
+
+## Flow
+
+```
+Login
+   │
+   ▼
+Server generates Token
+   │
+   ▼
+Client stores Token
+   │
+   ▼
+Authorization: Token xxxxx
+   │
+   ▼
+Server validates Token
+```
+
+---
+
+### Example Header
+
+```
+Authorization: Token abc123xyz
+```
+
+---
+
+## Quick Summary
+
+- Client stores token.
+- Server validates token.
+- Stateless authentication.
+
+## Pros and Cons of Token Authentication
+
+### Advantages
+
+- Stateless.
+- Scales easily.
+- Works across Web, Mobile, and Desktop apps.
+- No server-side session storage.
+
+### Disadvantages
+
+- Token is sent with every request.
+- If a token is stolen, it can be misused until it expires or is revoked.
+- Token management (expiry, refresh, revocation) adds complexity.
+
+---
+
+## Interview Insight
+
+Modern APIs generally prefer **JWT/Token Authentication** over Session Authentication because it is **stateless and easier to scale**.
+
+---
+
+## Quick Summary
+
+- Best for REST APIs.
+- Supports multiple clients.
+- More scalable than Session Authentication.
+
