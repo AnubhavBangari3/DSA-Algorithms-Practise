@@ -2372,3 +2372,170 @@ Separate Queries + Python Mapping
         ↓
 2 Queries
 ```
+
+## What is an API?
+
+An **API (Application Programming Interface)** allows two applications to communicate with each other.
+
+It defines **how a client sends a request and how the server responds**.
+
+### Example
+
+A mobile app requests:
+
+```
+GET /employees/1
+```
+
+API Response
+
+```json
+{
+    "id": 1,
+    "name": "Anubhav"
+}
+```
+
+---
+
+## Interview Insight
+
+Think of an API as a **messenger** between the client and the server.
+
+---
+
+## Quick Summary
+
+- API enables communication between applications.
+- It defines requests and responses.
+
+## What is a Web API?
+
+A **Web API** is an API that works over the **HTTP/HTTPS protocol**.
+
+It exposes data through URLs (endpoints).
+
+Example
+
+```
+GET /api/employees/
+POST /api/employees/
+```
+
+---
+
+## Quick Summary
+
+- Works over HTTP/HTTPS.
+- Uses URLs (endpoints).
+- Returns data, usually JSON.
+
+## What is a REST API?
+
+A **REST API** is a Web API that follows REST principles.
+
+### Characteristics
+
+- Stateless
+- Uses HTTP methods (GET, POST, PUT, DELETE)
+- Uses URLs to identify resources
+- Usually returns JSON
+
+Example
+
+```
+GET /employees/
+POST /employees/
+PUT /employees/1/
+DELETE /employees/1/
+```
+
+---
+
+## Quick Summary
+
+- REST is an architectural style.
+- Stateless.
+- Uses HTTP methods.
+- Usually returns JSON.
+
+## What is an Endpoint?
+
+An **Endpoint** is the URL through which an API can be accessed.
+
+Example
+
+```
+GET /employees/
+```
+
+Here,
+
+```
+/employees/
+```
+
+is the endpoint.
+
+---
+
+## Quick Summary
+
+- Endpoint = API URL.
+- Each endpoint performs a specific operation.
+
+## What are HTTP Verbs?
+
+HTTP Verbs define **what action should be performed** on a resource.
+
+| Method | Purpose |
+|----------|---------|
+| GET | Retrieve data |
+| POST | Create data |
+| PUT | Update entire object |
+| PATCH | Partial update |
+| DELETE | Delete data |
+
+Example
+
+```
+GET    /employees/
+POST   /employees/
+PUT    /employees/1/
+PATCH  /employees/1/
+DELETE /employees/1/
+```
+
+---
+
+## Quick Summary
+
+- HTTP methods define CRUD operations.
+- GET = Read
+- POST = Create
+- PUT/PATCH = Update
+- DELETE = Delete
+
+## Difference between HTTP and HTTPS
+
+| HTTP | HTTPS |
+|------|-------|
+| Not Secure | Secure |
+| No Encryption | Encrypted using SSL/TLS |
+| Port 80 | Port 443 |
+| Faster | Slightly slower due to encryption |
+| Used for testing | Used in production |
+
+---
+
+## Interview Insight
+
+Always use **HTTPS** in production because it encrypts data between the client and the server.
+
+---
+
+## Quick Summary
+
+- HTTP → Unsecured communication.
+- HTTPS → Secure encrypted communication using SSL/TLS.
+- Production applications should always use HTTPS.
