@@ -2844,3 +2844,269 @@ This makes REST APIs easier to scale.
 - **Stateless** → Server does not remember the user; the client sends a JWT/token with every request.
 - Most modern REST APIs use **Stateless (JWT)** authentication.
 
+## What is Django REST Framework (DRF)?
+
+**Django REST Framework (DRF)** is a toolkit built on top of Django for developing **RESTful APIs**.
+
+It provides features like serialization, authentication, permissions, pagination, filtering, and a browsable API.
+
+---
+
+## Why use DRF?
+
+- Build REST APIs quickly
+- Automatic JSON responses
+- Authentication & Permissions
+- Browsable API
+- Serialization
+- Pagination & Filtering
+
+---
+
+## Quick Summary
+
+- DRF is used to build REST APIs in Django.
+- It simplifies API development with many built-in features.
+
+## Benefits of Django REST Framework
+
+- Easy to build REST APIs
+- Automatic JSON serialization
+- Built-in Authentication & Permissions
+- Browsable API for testing
+- Pagination, Filtering & Validation
+- Excellent documentation and community support
+
+---
+
+## Quick Summary
+
+DRF reduces boilerplate code and speeds up API development.
+
+## What are Serializers?
+
+A **Serializer** converts Django model objects into **JSON** and converts JSON back into Python objects after validation.
+
+Think of it as the bridge between **Model ↔ JSON**.
+
+---
+
+### Example
+
+Model
+
+```python
+class Employee(models.Model):
+    name = models.CharField(max_length=100)
+```
+
+Serializer
+
+```python
+from rest_framework import serializers
+
+class EmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = "__all__"
+```
+
+JSON Output
+
+```json
+{
+    "id": 1,
+    "name": "Anubhav"
+}
+```
+
+---
+
+## Interview Insight
+
+**Serializer = Django Forms for APIs**
+
+Forms validate HTML input.
+
+Serializers validate JSON input.
+
+---
+
+## Quick Summary
+
+- Converts Model → JSON.
+- Converts JSON → Model.
+- Performs validation.
+
+## What are Permissions in DRF?
+
+Permissions determine **who can access an API**.
+
+Permission checks happen **after authentication** and before the view logic executes.
+
+---
+
+## Common Permission Classes
+
+| Permission | Access |
+|------------|--------|
+| `AllowAny` | Everyone |
+| `IsAuthenticated` | Logged-in users only |
+| `IsAdminUser` | Admin users only |
+| `IsAuthenticatedOrReadOnly` | Anyone can read, authenticated users can modify |
+
+---
+
+### Example
+
+```python
+from rest_framework.permissions import IsAuthenticated
+
+class EmployeeView(APIView):
+    permission_classes = [IsAuthenticated]
+```
+
+---
+
+## Quick Summary
+
+Permissions control API access based on the authenticated user.
+
+## How do you add Login to the DRF Browsable API?
+
+Add the following URL in the project's `urls.py`.
+
+```python
+from django.urls import include, path
+
+urlpatterns = [
+    path("api-auth/", include("rest_framework.urls")),
+]
+```
+
+Now you can log in from the DRF Browsable API.
+
+---
+
+## Quick Summary
+
+Include:
+
+```python
+path("api-auth/", include("rest_framework.urls"))
+```
+
+to enable login/logout in the browsable API.
+
+## What are Project-Level Permissions?
+
+Project-level permissions apply to **all DRF views** by default.
+
+Configure them in `settings.py`.
+
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ]
+}
+```
+
+---
+
+## Common Project Permissions
+
+| Permission | Access |
+|------------|--------|
+| `AllowAny` | Everyone |
+| `IsAuthenticated` | Logged-in users |
+| `IsAdminUser` | Admin only |
+| `IsAuthenticatedOrReadOnly` | Read for all, write for authenticated users |
+
+---
+
+## Quick Summary
+
+Project-level permissions act as the default permissions for all APIs.
+
+## How do you Create a Custom Permission Class?
+
+Create a `permissions.py` file and inherit from `BasePermission`.
+
+```python
+from rest_framework.permissions import BasePermission
+
+class IsManager(BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.is_staff
+```
+
+Use it in the view.
+
+```python
+permission_classes = [IsManager]
+```
+
+---
+
+## Quick Summary
+
+- Inherit from `BasePermission`.
+- Override `has_permission()` or `has_object_permission()`.
+
+## What is Basic Authentication?
+
+Basic Authentication sends the **username and password** with every request.
+
+The credentials are **Base64 encoded (not encrypted)**.
+
+Example Request
+
+```
+Authorization: Basic dXNlcjpwYXNzd29yZA==
+```
+
+---
+
+## Basic Authentication Flow
+
+```
+Client
+   │
+   ▼
+Request
+   │
+   ▼
+401 Unauthorized
+   │
+   ▼
+Client sends Username & Password
+   │
+   ▼
+Server verifies credentials
+   │
+   ▼
+200 OK
+```
+
+---
+
+## Interview Insight
+
+**Is Base64 secure?**
+
+No.
+
+Base64 is only **encoding**, not encryption.
+
+Basic Authentication should always be used with **HTTPS**.
+
+---
+
+## Quick Summary
+
+- Sends username & password with every request.
+- Uses Base64 encoding.
+- Must be used over HTTPS.
+
