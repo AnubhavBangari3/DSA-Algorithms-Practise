@@ -2539,3 +2539,185 @@ Always use **HTTPS** in production because it encrypts data between the client a
 - HTTP → Unsecured communication.
 - HTTPS → Secure encrypted communication using SSL/TLS.
 - Production applications should always use HTTPS.
+
+
+## What are HTTP Status Codes?
+
+HTTP Status Codes indicate the result of an HTTP request.
+
+| Code | Meaning |
+|------|---------|
+| 1xx | Informational |
+| 2xx | Success |
+| 3xx | Redirection |
+| 4xx | Client Error |
+| 5xx | Server Error |
+
+### Common Status Codes
+
+| Status Code | Meaning |
+|-------------|---------|
+| 200 OK | Request successful |
+| 201 Created | Resource created |
+| 204 No Content | Success, no response body |
+| 400 Bad Request | Invalid request |
+| 401 Unauthorized | Authentication required |
+| 403 Forbidden | Permission denied |
+| 404 Not Found | Resource not found |
+| 500 Internal Server Error | Server error |
+
+---
+
+## Quick Summary
+
+- **2xx** → Success
+- **3xx** → Redirect
+- **4xx** → Client mistake
+- **5xx** → Server mistake
+
+## Difference Between Authentication and Authorization
+
+| Authentication | Authorization |
+|---------------|---------------|
+| Verifies **who you are** | Verifies **what you can access** |
+| Happens first | Happens after authentication |
+| Uses username/password, JWT, OAuth | Uses roles and permissions |
+
+### Example
+
+- Login with username & password → **Authentication**
+- Access Admin Dashboard → **Authorization**
+
+---
+
+## Interview Insight
+
+**Authentication = Identity**
+
+**Authorization = Permission**
+
+---
+
+## Quick Summary
+
+- Authentication verifies the user.
+- Authorization determines what the user is allowed to do.
+
+## What is a Browsable API?
+
+A **Browsable API** is a feature of **Django REST Framework (DRF)** that provides a **web-based interface** for testing APIs directly from the browser.
+
+Instead of using Postman, you can send GET, POST, PUT, and DELETE requests from your browser.
+
+Example
+
+```
+http://127.0.0.1:8000/api/employees/
+```
+
+---
+
+## Benefits
+
+- Easy API testing
+- No need for Postman during development
+- Great for debugging
+
+---
+
+## Quick Summary
+
+- Built-in DRF feature.
+- Browser-based API testing interface.
+- Mainly used during development.
+
+## What is CORS?
+
+**CORS (Cross-Origin Resource Sharing)** is a security mechanism that allows a frontend hosted on one domain to access a backend hosted on another domain.
+
+### Example
+
+Frontend
+
+```
+http://localhost:3000
+```
+
+Backend
+
+```
+http://localhost:8000
+```
+
+Without CORS, the browser blocks the request.
+
+---
+
+## Quick Summary
+
+- Allows communication between different origins.
+- Controlled by the server using HTTP headers.
+
+## How do you Fix CORS Error in Django?
+
+The recommended way is to use **django-cors-headers**.
+
+### Step 1: Install
+
+```bash
+pip install django-cors-headers
+```
+
+---
+
+### Step 2: Add to `INSTALLED_APPS`
+
+```python
+INSTALLED_APPS = [
+    "corsheaders",
+]
+```
+
+---
+
+### Step 3: Add Middleware
+
+```python
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+]
+```
+
+---
+
+### Step 4: Allow Frontend
+
+```python
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+```
+
+---
+
+## Interview Insight
+
+During development, many developers use:
+
+```python
+CORS_ALLOW_ALL_ORIGINS = True
+```
+
+**Never use this in production** because it allows requests from any origin.
+
+---
+
+## Quick Summary
+
+- Install `django-cors-headers`.
+- Add it to `INSTALLED_APPS`.
+- Add `CorsMiddleware`.
+- Configure `CORS_ALLOWED_ORIGINS`.
+- Avoid `CORS_ALLOW_ALL_ORIGINS=True` in production.
+
