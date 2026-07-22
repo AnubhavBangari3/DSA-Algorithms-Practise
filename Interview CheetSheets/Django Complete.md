@@ -1075,3 +1075,190 @@ path("employees/", views.employee_list, name="employee-list")
 - `path()` is used for simple URLs.
 - `re_path()` is used for regex-based URLs.
 - `include()` helps organize app-specific routes.
+
+## Explain Django ORM (Object Relational Mapping)
+
+Django ORM (Object Relational Mapping) is a feature that allows you to interact with the database using **Python objects instead of writing SQL queries**.
+
+It converts Python code into SQL behind the scenes.
+
+---
+
+## Core Components
+
+### 1. Model
+
+A Model represents a database table.
+
+```python
+from django.db import models
+
+class Employee(models.Model):
+    name = models.CharField(max_length=100)
+    salary = models.IntegerField()
+```
+
+---
+
+### 2. Model Instance
+
+Each object represents one row in the database.
+
+```python
+emp = Employee(name="Anubhav", salary=80000)
+emp.save()
+```
+
+---
+
+### 3. QuerySet
+
+A QuerySet is a collection of database queries.
+
+```python
+employees = Employee.objects.all()
+```
+
+QuerySets are **lazy**, meaning the SQL query executes only when the data is actually needed.
+
+---
+
+## Common ORM Operations
+
+### Create
+
+```python
+Employee.objects.create(
+    name="Rahul",
+    salary=50000
+)
+```
+
+---
+
+### Retrieve
+
+```python
+Employee.objects.all()
+
+Employee.objects.get(id=1)
+
+Employee.objects.filter(salary__gt=50000)
+```
+
+---
+
+### Update
+
+```python
+emp = Employee.objects.get(id=1)
+emp.salary = 90000
+emp.save()
+```
+
+or
+
+```python
+Employee.objects.filter(id=1).update(salary=90000)
+```
+
+---
+
+### Delete
+
+```python
+Employee.objects.get(id=1).delete()
+```
+
+---
+
+## Why Use ORM?
+
+- No need to write SQL
+- Database independent (SQLite, MySQL, PostgreSQL, etc.)
+- Prevents SQL Injection
+- Cleaner and more readable code
+- Faster development
+
+---
+
+## ORM Example
+
+Model
+
+```python
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+```
+
+Query
+
+```python
+books = Book.objects.filter(author__name="Anubhav")
+```
+
+Equivalent SQL
+
+```sql
+SELECT *
+FROM book
+JOIN author
+ON book.author_id = author.id
+WHERE author.name = 'Anubhav';
+```
+
+---
+
+## Interview Insight
+
+**Does Django ORM execute queries immediately?**
+
+No.
+
+Django ORM uses **lazy evaluation**.
+
+Example
+
+```python
+employees = Employee.objects.filter(salary__gt=50000)
+```
+
+No SQL is executed yet.
+
+The query runs only when:
+
+```python
+for emp in employees:
+    print(emp.name)
+```
+
+or
+
+```python
+list(employees)
+```
+
+---
+
+## Advantages of ORM
+
+- Easy CRUD operations
+- Supports complex queries
+- Database portability
+- Built-in SQL injection protection
+- Improves developer productivity
+
+---
+
+## Quick Summary
+
+- Django ORM lets you interact with the database using Python code.
+- **Model** → Database Table
+- **Model Instance** → One Record (Row)
+- **QuerySet** → Collection of Queries
+- ORM is **lazy**, secure, and database-independent.
+- It automatically converts Python code into SQL.
