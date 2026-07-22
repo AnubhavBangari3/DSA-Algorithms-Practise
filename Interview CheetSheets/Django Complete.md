@@ -1262,3 +1262,139 @@ list(employees)
 - **QuerySet** → Collection of Queries
 - ORM is **lazy**, secure, and database-independent.
 - It automatically converts Python code into SQL.
+
+## What is a Django Model and how is it Defined?
+
+A **Django Model** is a Python class that represents a **database table**.
+
+Each attribute in the model represents a **column** in the table, and each object represents a **row** in the database.
+
+All Django models inherit from `models.Model`.
+
+---
+
+## Basic Model Syntax
+
+```python
+from django.db import models
+
+class Employee(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    salary = models.IntegerField()
+
+    def __str__(self):
+        return self.name
+```
+
+---
+
+## Components of a Model
+
+### Fields
+
+Fields define the columns of the database table.
+
+Example
+
+```python
+name = models.CharField(max_length=100)
+salary = models.IntegerField()
+joined_on = models.DateField()
+```
+
+Common Field Types
+
+- CharField
+- IntegerField
+- BooleanField
+- DateField
+- DateTimeField
+- EmailField
+- ForeignKey
+- ManyToManyField
+- OneToOneField
+
+---
+
+### Meta Class
+
+Used to configure model behavior.
+
+```python
+class Meta:
+    ordering = ["name"]
+    db_table = "employees"
+```
+
+Common Meta Options
+
+- `db_table`
+- `ordering`
+- `verbose_name`
+- `unique_together`
+
+---
+
+### Model Methods
+
+Methods add custom functionality to the model.
+
+```python
+def __str__(self):
+    return self.name
+```
+
+`__str__()` defines how the object appears in the Django Admin Panel.
+
+---
+
+## Example
+
+```python
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+```
+
+Here,
+
+- `Author` and `Book` are models.
+- `ForeignKey` creates a **one-to-many relationship**.
+- If an Author is deleted, all related Books are deleted because of `CASCADE`.
+
+---
+
+## Interview Insight
+
+**What happens after creating a model?**
+
+After defining a model, run:
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+This creates the corresponding table in the database.
+
+---
+
+## Quick Summary
+
+- A Django Model represents a **database table**.
+- Each attribute represents a **table column**.
+- Models inherit from `models.Model`.
+- `Meta` is used for additional model configuration.
+- `__str__()` provides a readable object representation.
+- After creating a model, use **makemigrations** and **migrate** to apply changes.
