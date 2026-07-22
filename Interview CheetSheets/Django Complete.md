@@ -1642,3 +1642,224 @@ For simple endpoints, **Function-Based Views (FBVs)** are perfectly acceptable a
 - Django supports **Function-Based Views (FBVs)** and **Class-Based Views (CBVs)**.
 - Every view must be connected to a URL using `urls.py`.
 - **FBVs** are simple, while **CBVs** are more reusable and scalable.
+
+## Explain the Concept of URL Patterns in Django
+
+URL patterns define **which View should handle a particular URL request**.
+
+They are defined inside `urls.py` using `path()`, `re_path()`, and `include()`.
+
+---
+
+## Basic URL Pattern
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("employees/", views.employee_list),
+]
+```
+
+Request
+
+```
+/employees/
+```
+
+will call
+
+```python
+views.employee_list
+```
+
+---
+
+## URL Parameters
+
+You can capture values directly from the URL.
+
+```python
+path("employees/<int:id>/", views.employee_detail)
+```
+
+Request
+
+```
+/employees/10/
+```
+
+View
+
+```python
+def employee_detail(request, id):
+    return HttpResponse(id)
+```
+
+---
+
+## `include()`
+
+Used to split URLs into different apps.
+
+Project `urls.py`
+
+```python
+urlpatterns = [
+    path("employees/", include("employees.urls")),
+]
+```
+
+App `urls.py`
+
+```python
+urlpatterns = [
+    path("", views.employee_list),
+]
+```
+
+---
+
+## `path()` vs `re_path()`
+
+| Feature | `path()` | `re_path()` |
+|----------|-----------|-------------|
+| Matching | Simple URLs | Regular Expressions |
+| Readability | Easy | Complex |
+| Recommended | Yes (Most Cases) | Only when regex is needed |
+
+Example
+
+```python
+path("articles/<int:year>/", views.article)
+```
+
+```python
+re_path(r"^articles/[0-9]{4}/$", views.article)
+```
+
+---
+
+## Best Practices
+
+- Keep URLs clean and meaningful.
+- Use `include()` for app-level routing.
+- Give URLs a `name` for reverse lookup.
+
+```python
+path("employees/", views.employee_list, name="employee-list")
+```
+
+---
+
+## Interview Insight
+
+**Why use named URLs?**
+
+Named URLs allow you to use `reverse()` or `{% url %}` instead of hardcoding paths, making your application easier to maintain.
+
+---
+
+## Quick Summary
+
+- URL patterns map **URLs to Views**.
+- `path()` is used for most routing.
+- `re_path()` is used for regex-based routing.
+- `include()` keeps large projects modular.
+- Use **named URLs** to avoid hardcoding paths.
+
+## What is a Database Migration in Django?
+
+A **migration** is Django's way of applying changes made in models to the database schema.
+
+Whenever you create or modify a model, Django generates migration files that update the database accordingly.
+
+---
+
+## Why are Migrations Important?
+
+- Keeps database schema in sync with models.
+- Tracks database changes in Git.
+- Makes deployments easier.
+- Allows multiple developers to work on the same project.
+
+---
+
+## Migration Workflow
+
+### Step 1: Create or Modify a Model
+
+```python
+class Employee(models.Model):
+    name = models.CharField(max_length=100)
+```
+
+---
+
+### Step 2: Generate Migration
+
+```bash
+python manage.py makemigrations
+```
+
+Creates a migration file.
+
+---
+
+### Step 3: Apply Migration
+
+```bash
+python manage.py migrate
+```
+
+Creates or updates the database tables.
+
+---
+
+## Useful Migration Commands
+
+Generate migrations
+
+```bash
+python manage.py makemigrations
+```
+
+Apply migrations
+
+```bash
+python manage.py migrate
+```
+
+View migration status
+
+```bash
+python manage.py showmigrations
+```
+
+Rollback to a previous migration
+
+```bash
+python manage.py migrate app_name 0001
+```
+
+---
+
+## Interview Insight
+
+**What is the difference between `makemigrations` and `migrate`?**
+
+| Command | Purpose |
+|----------|---------|
+| `makemigrations` | Creates migration files from model changes. |
+| `migrate` | Executes those migration files on the database. |
+
+---
+
+## Quick Summary
+
+- Migrations keep **models and database schema synchronized**.
+- `makemigrations` creates migration files.
+- `migrate` applies those changes to the database.
+- `showmigrations` displays migration status.
+- Migration files should be committed to Git.
