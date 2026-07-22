@@ -2721,3 +2721,126 @@ CORS_ALLOW_ALL_ORIGINS = True
 - Configure `CORS_ALLOWED_ORIGINS`.
 - Avoid `CORS_ALLOW_ALL_ORIGINS=True` in production.
 
+## Difference Between Stateful and Stateless
+
+A **Stateful** application remembers previous requests, while a **Stateless** application treats every request as a completely new request.
+
+---
+
+## Example
+
+### Stateful (Session Authentication)
+
+```
+1. User logs in
+        ↓
+Server creates Session
+        ↓
+Session ID stored on Server
+        ↓
+Browser sends Session ID with every request
+        ↓
+Server checks its Session
+```
+
+Example
+
+```
+Login
+↓
+
+Server:
+Session ID = ABC123
+
+↓
+
+GET /profile
+
+Cookie:
+sessionid=ABC123
+
+↓
+
+Server checks Session ID
+↓
+
+Returns Profile
+```
+
+The server **remembers** the user.
+
+---
+
+### Stateless (JWT Authentication)
+
+```
+1. User logs in
+        ↓
+Server generates JWT Token
+        ↓
+Client stores Token
+        ↓
+Client sends Token with every request
+        ↓
+Server validates Token
+```
+
+Example
+
+```
+Login
+↓
+
+JWT Token
+
+↓
+
+GET /profile
+
+Authorization:
+Bearer eyJhbGciOi...
+
+↓
+
+Server verifies Token
+
+↓
+
+Returns Profile
+```
+
+The server **does not remember** the user.
+
+---
+
+## Stateful vs Stateless
+
+| Feature | Stateful | Stateless |
+|----------|-----------|-----------|
+| Stores user state | Server | Client (Token) |
+| Session required | Yes | No |
+| Server memory | Required | Not Required |
+| Scalability | Lower | Higher |
+| Best Example | Session Authentication | JWT Authentication |
+| Every request | Depends on previous requests | Independent |
+
+---
+
+## Interview Insight
+
+**Why are REST APIs Stateless?**
+
+REST requires that **every request contains all the information needed** to process it.
+
+The server should **not remember previous requests**.
+
+This makes REST APIs easier to scale.
+
+---
+
+## Quick Summary
+
+- **Stateful** → Server remembers the user (Session Authentication).
+- **Stateless** → Server does not remember the user; the client sends a JWT/token with every request.
+- Most modern REST APIs use **Stateless (JWT)** authentication.
+
