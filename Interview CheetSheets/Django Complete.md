@@ -1863,3 +1863,154 @@ python manage.py migrate app_name 0001
 - `migrate` applies those changes to the database.
 - `showmigrations` displays migration status.
 - Migration files should be committed to Git.
+
+## Explain the Difference Between `ForeignKey` and `ManyToManyField`
+
+Both are used to create relationships between Django models, but they represent different types of relationships.
+
+---
+
+## ForeignKey (One-to-Many)
+
+A `ForeignKey` means **one object belongs to one parent**, but a parent can have many child objects.
+
+### Example
+
+One **Department** can have many **Employees**, but an Employee belongs to only one Department.
+
+```python
+class Department(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Employee(models.Model):
+    name = models.CharField(max_length=100)
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE
+    )
+```
+
+### Data
+
+| Employee | Department |
+|----------|------------|
+| Anubhav | IT |
+| Rahul | IT |
+| Priya | HR |
+
+Here,
+
+- IT → Anubhav, Rahul
+- HR → Priya
+- One Employee cannot belong to multiple departments.
+
+---
+
+## ManyToManyField (Many-to-Many)
+
+A `ManyToManyField` means **both models can have multiple relationships with each other**.
+
+### Example
+
+A **Student** can enroll in multiple **Courses**, and a **Course** can have many Students.
+
+```python
+class Course(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Student(models.Model):
+    name = models.CharField(max_length=100)
+    courses = models.ManyToManyField(Course)
+```
+
+### Data
+
+| Student | Courses |
+|----------|---------|
+| Anubhav | Python, Django |
+| Rahul | Django, React |
+| Priya | Python |
+
+Here,
+
+- **Python** → Anubhav, Priya
+- **Django** → Anubhav, Rahul
+
+This is a **many-to-many** relationship.
+
+---
+
+## ManyToMany with Extra Fields (`through`)
+
+Suppose employees work on multiple projects, and you also want to store **their role** in each project.
+
+```python
+class Employee(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Project(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Assignment(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+```
+
+### Data
+
+| Employee | Project | Role |
+|----------|---------|------|
+| Anubhav | Banking App | Backend Developer |
+| Anubhav | AI Chatbot | Team Lead |
+| Rahul | Banking App | Frontend Developer |
+
+The `Assignment` table stores the relationship **plus additional information (`role`)**.
+
+---
+
+## ForeignKey vs ManyToManyField
+
+| Feature | ForeignKey | ManyToManyField |
+|----------|------------|-----------------|
+| Relationship | One-to-Many | Many-to-Many |
+| Extra Table | No | Yes (Automatically Created) |
+| One object linked to | One parent | Multiple objects |
+| Example | Employee → Department | Student ↔ Course |
+
+---
+
+## Interview Insight
+
+**When should you use `ForeignKey`?**
+
+Use it when an object belongs to **only one parent**.
+
+Example:
+
+- Employee → Department
+- Book → Author
+- Order → Customer
+
+**When should you use `ManyToManyField`?**
+
+Use it when **both sides can have multiple relationships**.
+
+Example:
+
+- Student ↔ Course
+- User ↔ Role
+- Product ↔ Category
+
+---
+
+## Quick Summary
+
+- `ForeignKey` = **One-to-Many** relationship.
+- `ManyToManyField` = **Many-to-Many** relationship.
+- `ManyToManyField` creates an intermediate table automatically.
+- Use `through` when you need extra fields in the relationship.
