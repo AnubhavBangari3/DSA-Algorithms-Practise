@@ -804,3 +804,139 @@ Yes. Since a Django app is self-contained, it can be reused in different Django 
 - A project can contain multiple apps.
 - Apps contain **Models, Views, URLs, Templates, and Admin**.
 - Projects contain **settings.py, urls.py, wsgi.py, and asgi.py**.
+
+## What is the Purpose of `settings.py` in Django?
+
+`settings.py` is the **central configuration file** of a Django project.
+
+It contains all the project-wide settings such as database configuration, installed apps, middleware, security, static files, and more.
+
+---
+
+## Common Configurations in `settings.py`
+
+### Installed Apps
+
+Registers all Django, third-party, and custom apps.
+
+```python
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "rest_framework",
+    "employees",
+]
+```
+
+---
+
+### Database Configuration
+
+Defines which database the project uses.
+
+```python
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "company_db",
+    }
+}
+```
+
+---
+
+### Middleware
+
+Defines middleware executed for every request and response.
+
+```python
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+]
+```
+
+---
+
+### URL Configuration
+
+Specifies the root URL file.
+
+```python
+ROOT_URLCONF = "project.urls"
+```
+
+---
+
+### Static & Media Files
+
+Used for CSS, JavaScript, Images, and File Uploads.
+
+```python
+STATIC_URL = "static/"
+MEDIA_URL = "media/"
+```
+
+---
+
+### Security Settings
+
+Controls project security.
+
+Examples
+
+```python
+DEBUG = False
+
+ALLOWED_HOSTS = ["example.com"]
+```
+
+---
+
+### Environment Variables
+
+Sensitive data like secret keys should be stored using environment variables.
+
+```python
+SECRET_KEY = os.getenv("SECRET_KEY")
+```
+
+---
+
+## Why is `settings.py` Important?
+
+- Centralized project configuration
+- Easy environment-specific settings (Development, Testing, Production)
+- Better security using environment variables
+- Easy integration of third-party packages
+- Consistent configuration across the project
+
+---
+
+## Common Use Cases
+
+- Configure Database
+- Register Installed Apps
+- Add Middleware
+- Configure Static & Media Files
+- Security Settings
+- Internationalization
+- Third-party Integrations (DRF, Celery, CORS, etc.)
+
+---
+
+## Interview Insight
+
+A common interview question is:
+
+**Why should we use environment variables in `settings.py`?**
+
+**Answer:**
+
+To keep sensitive information like **SECRET_KEY, Database Passwords, API Keys, and JWT Secrets** out of the source code and improve security.
+
+---
+
+## Quick Summary
+
+- `settings.py` is the **main configuration file** of a Django project.
+- It manages **database, apps, middleware, security, URLs, static files, and environment variables**.
+- It helps keep project configuration centralized, secure, and easy to manage.
