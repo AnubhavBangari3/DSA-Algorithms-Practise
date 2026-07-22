@@ -1513,3 +1513,132 @@ Using `ModelAdmin`, you can customize:
 - Models are registered using `admin.site.register()`.
 - It is ideal for **internal management**, not customer-facing applications.
 - It can be customized using `ModelAdmin`.
+
+## What is a Django View and how is it Created?
+
+A **Django View** is a Python function or class that receives an HTTP request, processes it, and returns an HTTP response.
+
+Views contain the **business logic** of the application.
+
+---
+
+## Types of Views
+
+### 1. Function-Based View (FBV)
+
+A simple Python function that handles requests.
+
+```python
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("Welcome to Django")
+```
+
+---
+
+### 2. Class-Based View (CBV)
+
+A Python class that provides a structured way to handle different HTTP methods.
+
+```python
+from django.views import View
+from django.http import HttpResponse
+
+class HomeView(View):
+
+    def get(self, request):
+        return HttpResponse("GET Request")
+
+    def post(self, request):
+        return HttpResponse("POST Request")
+```
+
+---
+
+## Mapping View to URL
+
+Every view must be mapped in `urls.py`.
+
+```python
+from django.urls import path
+from .views import home, HomeView
+
+urlpatterns = [
+    path("home/", home),
+    path("dashboard/", HomeView.as_view()),
+]
+```
+
+---
+
+## Request Flow
+
+```
+Browser
+    │
+    ▼
+urls.py
+    │
+    ▼
+View
+    │
+    ▼
+Model (if required)
+    │
+    ▼
+Template / JSON
+    │
+    ▼
+HTTP Response
+```
+
+---
+
+## Function-Based View vs Class-Based View
+
+| Feature | Function-Based View (FBV) | Class-Based View (CBV) |
+|---------|----------------------------|-------------------------|
+| Definition | Python Function | Python Class |
+| Simplicity | Easy | Slightly Complex |
+| Best For | Small applications | Medium & Large applications |
+| Code Reusability | Less | More |
+| HTTP Methods | if/else | Separate `get()`, `post()`, etc. |
+| Inheritance | No | Yes |
+
+---
+
+## When to Use?
+
+### Use FBV
+
+- Simple APIs
+- Small projects
+- Less business logic
+
+### Use CBV
+
+- CRUD operations
+- Large projects
+- Reusable code
+- Multiple HTTP methods
+
+---
+
+## Interview Insight
+
+**Which one is preferred in production?**
+
+For larger projects, **Class-Based Views (CBVs)** are generally preferred because they are reusable, support inheritance, and reduce code duplication.
+
+For simple endpoints, **Function-Based Views (FBVs)** are perfectly acceptable and easier to understand.
+
+---
+
+## Quick Summary
+
+- A **View** handles HTTP requests and returns HTTP responses.
+- Views contain the application's business logic.
+- Django supports **Function-Based Views (FBVs)** and **Class-Based Views (CBVs)**.
+- Every view must be connected to a URL using `urls.py`.
+- **FBVs** are simple, while **CBVs** are more reusable and scalable.
