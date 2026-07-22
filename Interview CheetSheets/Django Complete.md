@@ -3728,3 +3728,101 @@ DELETE  /employees/1/
 - Routers generate URLs automatically.
 - Used together with ViewSets.
 - `DefaultRouter` is the most commonly used router in DRF.
+
+
+## Difference Between APIView and ViewSet in DRF
+
+Both **APIView** and **ViewSet** are used to build APIs in DRF, but they differ in the amount of code you need to write.
+
+---
+
+## APIView
+
+In `APIView`, you manually define each HTTP method.
+
+```python
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class EmployeeAPIView(APIView):
+
+    def get(self, request):
+        return Response("List Employees")
+
+    def post(self, request):
+        return Response("Create Employee")
+```
+
+---
+
+## ViewSet
+
+In `ViewSet`, you define **actions**, and DRF maps them to HTTP methods automatically.
+
+```python
+from rest_framework.viewsets import ModelViewSet
+
+class EmployeeViewSet(ModelViewSet):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+```
+
+No need to write `get()`, `post()`, `put()`, etc.
+
+---
+
+## APIView vs ViewSet
+
+| APIView | ViewSet |
+|---------|----------|
+| Uses `get()`, `post()`, `put()`, `delete()` | Uses `list()`, `retrieve()`, `create()`, `update()`, `destroy()` |
+| More control | Less code |
+| Manual URL mapping | Usually used with Routers |
+| Best for custom APIs | Best for CRUD APIs |
+
+---
+
+## HTTP Method Mapping in ViewSet
+
+| HTTP Method | ViewSet Action |
+|--------------|----------------|
+| GET `/employees/` | `list()` |
+| GET `/employees/1/` | `retrieve()` |
+| POST | `create()` |
+| PUT | `update()` |
+| PATCH | `partial_update()` |
+| DELETE | `destroy()` |
+
+---
+
+## When to Use?
+
+### Use APIView
+
+- Custom business logic
+- Complex APIs
+- Non-CRUD operations
+
+### Use ViewSet
+
+- Standard CRUD APIs
+- Faster development
+- Less boilerplate code
+
+---
+
+## Interview Insight
+
+**Which one is preferred?**
+
+- **APIView** → When you need full control over the request/response.
+- **ModelViewSet** → When you're building standard CRUD APIs.
+
+---
+
+## Quick Summary
+
+- **APIView** gives more flexibility but requires more code.
+- **ViewSet** reduces boilerplate and automatically supports CRUD operations.
+- **APIView** uses HTTP methods (`get()`, `post()`).
+- **ViewSet** uses actions (`list()`, `create()`, `retrieve()`, etc.).
