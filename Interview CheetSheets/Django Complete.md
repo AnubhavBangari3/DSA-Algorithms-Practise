@@ -940,3 +940,138 @@ To keep sensitive information like **SECRET_KEY, Database Passwords, API Keys, a
 - `settings.py` is the **main configuration file** of a Django project.
 - It manages **database, apps, middleware, security, URLs, static files, and environment variables**.
 - It helps keep project configuration centralized, secure, and easy to manage.
+
+## What is the Role of `urls.py` in a Django Project?
+
+The `urls.py` file is responsible for **routing incoming HTTP requests to the appropriate view**.
+
+It acts as a **URL dispatcher**, mapping URLs to view functions or class-based views.
+
+---
+
+## Types of `urls.py`
+
+### 1. Project URLs (`project/urls.py`)
+
+The main `urls.py` of the project.
+
+It includes URLs from different apps.
+
+Example
+
+```python
+from django.urls import path, include
+
+urlpatterns = [
+    path("employees/", include("employees.urls")),
+    path("products/", include("products.urls")),
+]
+```
+
+---
+
+### 2. App URLs (`app/urls.py`)
+
+Handles URLs specific to that app.
+
+Example
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home),
+    path("about/", views.about),
+]
+```
+
+---
+
+## URL Patterns
+
+### `path()`
+
+Used for simple URL routing.
+
+```python
+path("employees/", views.employee_list)
+```
+
+---
+
+### `re_path()`
+
+Used for complex URL patterns with regular expressions.
+
+```python
+from django.urls import re_path
+
+re_path(r"^articles/[0-9]{4}/$", views.article)
+```
+
+---
+
+## URL Parameters
+
+Parameters can be passed directly from the URL.
+
+Example
+
+```python
+path("employees/<int:id>/", views.employee_detail)
+```
+
+View
+
+```python
+def employee_detail(request, id):
+    return HttpResponse(id)
+```
+
+Request
+
+```
+/employees/10/
+```
+
+Output
+
+```
+10
+```
+
+---
+
+## Best Practices
+
+- Keep app-specific URLs inside each app.
+- Use `include()` for modular routing.
+- Use `name` for reverse URL lookup.
+- Use meaningful and RESTful URL names.
+
+Example
+
+```python
+path("employees/", views.employee_list, name="employee-list")
+```
+
+---
+
+## Interview Insight
+
+**Difference between `path()` and `re_path()`?**
+
+- `path()` → Simple and readable URL patterns.
+- `re_path()` → Used when regular expressions are required.
+
+---
+
+## Quick Summary
+
+- `urls.py` maps URLs to Views.
+- Every Django project has a **project-level** `urls.py`.
+- Every app can have its own `urls.py`.
+- `path()` is used for simple URLs.
+- `re_path()` is used for regex-based URLs.
+- `include()` helps organize app-specific routes.
