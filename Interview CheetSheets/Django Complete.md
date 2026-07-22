@@ -2243,3 +2243,132 @@ Student.objects.prefetch_related("courses")
 - It is **lazy**, meaning SQL executes only when needed.
 - Common methods are `all()`, `get()`, `filter()`, `exclude()`, `update()`, `delete()`, `count()`, and `exists()`.
 - Use `select_related()` for **ForeignKey/OneToOne** and `prefetch_related()` for **ManyToMany** relationships.
+
+## `select_related()` vs `prefetch_related()`
+
+### Models
+
+```python
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+
+class Student(models.Model):
+    name = models.CharField(max_length=100)
+    books = models.ManyToManyField(Book)
+```
+
+---
+
+## 1. `select_related()` (ForeignKey / OneToOne)
+
+Without `select_related()`
+
+```python
+books = Book.objects.all()
+
+for book in books:
+    print(book.title, book.author.name)
+```
+
+Suppose there are **100 books**.
+
+Queries executed:
+
+```
+1 query -> Fetch Books
+100 queries -> Fetch each Author
+
+Total = 101 Queries ❌
+```
+
+Using `select_related()`
+
+```python
+books = Book.objects.select_related("author")
+
+for book in books:
+    print(book.title, book.author.name)
+```
+
+Queries executed:
+
+```
+1 JOIN Query ✅
+```
+
+---
+
+## 2. `prefetch_related()` (ManyToMany)
+
+Without `prefetch_related()`
+
+```python
+students = Student.objects.all()
+
+for student in students:
+    print(student.name)
+
+    for book in student.books.all():
+        print(book.title)
+```
+
+Suppose there are **50 students**.
+
+Queries:
+
+```
+1 query -> Students
+50 queries -> Books for each student
+
+Total = 51 Queries ❌
+```
+
+Using `prefetch_related()`
+
+```python
+students = Student.objects.prefetch_related("books")
+
+for student in students:
+    print(student.name)
+
+    for book in student.books.all():
+        print(book.title)
+```
+
+Queries:
+
+```
+1 query -> Students
+1 query -> All Books
+
+Total = 2 Queries ✅
+```
+
+---
+
+## Easy Interview Trick
+
+```
+ForeignKey / OneToOne
+        ↓
+select_related()
+        ↓
+SQL JOIN
+        ↓
+1 Query
+
+
+ManyToMany / Reverse FK
+        ↓
+prefetch_related()
+        ↓
+Separate Queries + Python Mapping
+        ↓
+2 Queries
+```
