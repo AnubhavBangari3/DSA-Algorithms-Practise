@@ -3265,3 +3265,350 @@ Modern APIs generally prefer **JWT/Token Authentication** over Session Authentic
 - Supports multiple clients.
 - More scalable than Session Authentication.
 
+## Difference Between Cookies and localStorage
+
+| Cookies | localStorage |
+|---------|--------------|
+| Stores small data (4 KB) | Stores larger data (~5 MB) |
+| Sent automatically with every HTTP request | Not sent automatically |
+| Can be accessed by the server | Accessible only by JavaScript |
+| Can be `HttpOnly` | Cannot be `HttpOnly` |
+| Mainly used for authentication/session | Mainly used for client-side data |
+
+---
+
+## Interview Insight
+
+Use **Cookies** for authentication and **localStorage** for client-side data like theme or preferences.
+
+---
+
+## Quick Summary
+
+- Cookies → Authentication
+- localStorage → Client-side storage
+
+## Where should a JWT Token be Stored?
+
+The recommended approach is to store JWT in an **HttpOnly, Secure Cookie**.
+
+### Why?
+
+- Cannot be accessed by JavaScript (`HttpOnly`).
+- Reduces the risk of XSS attacks.
+- `Secure` ensures it is sent only over HTTPS.
+
+---
+
+## Storage Options
+
+| Storage | Recommended? |
+|----------|--------------|
+| HttpOnly Cookie | ✅ Best Practice |
+| localStorage | ⚠️ Common but vulnerable to XSS |
+| sessionStorage | ✅ Good for temporary sessions |
+
+---
+
+## Interview Insight
+
+Many applications store JWT in **HttpOnly Secure Cookies** because they are more secure than `localStorage`.
+
+---
+
+## Quick Summary
+
+- Best Practice → **HttpOnly + Secure Cookie**
+- Avoid storing sensitive tokens in `localStorage`.
+
+## Disadvantages of DRF's Built-in TokenAuthentication
+
+- No token expiration.
+- Only one token per user.
+- No refresh token support.
+- Limited customization.
+
+---
+
+## Interview Insight
+
+For production applications, developers usually prefer **JWT (SimpleJWT)** instead of DRF's default `TokenAuthentication`.
+
+---
+
+## Quick Summary
+
+Built-in TokenAuthentication is simple but lacks expiry and refresh mechanisms.
+
+## What are JSON Web Tokens (JWT)?
+
+A **JWT (JSON Web Token)** is a compact, signed token used for **stateless authentication**.
+
+After login, the server generates a JWT, and the client sends it with every request.
+
+Example
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+---
+
+## JWT Structure
+
+```
+Header
+   .
+Payload
+   .
+Signature
+```
+
+---
+
+## Quick Summary
+
+- JWT is used for stateless authentication.
+- Sent in the `Authorization` header.
+- Contains Header, Payload, and Signature.
+
+## Benefits of JWT
+
+- Stateless authentication.
+- Faster and scalable.
+- Works with Web, Mobile, and Desktop apps.
+- Supports token expiration and refresh.
+- Compact and easy to transmit.
+
+---
+
+## Quick Summary
+
+JWT is lightweight, scalable, and ideal for modern REST APIs.
+
+## Difference Between Session and Cookie
+
+| Session | Cookie |
+|---------|---------|
+| Stored on the Server | Stored in the Browser |
+| More Secure | Less Secure |
+| Identified using Session ID | Stores small pieces of data |
+| Expires when session ends (by default) | Can persist for days, months, or years |
+
+### Example
+
+```
+Browser
+   │
+Cookie:
+sessionid=ABC123
+   │
+   ▼
+Server
+Stores complete Session Data
+```
+
+---
+
+## Quick Summary
+
+- Session → Server-side storage.
+- Cookie → Browser-side storage.
+- Cookies usually store the Session ID.
+## Difference Between Cookies and Tokens
+
+| Cookies | Tokens (JWT) |
+|----------|--------------|
+| Stateful | Stateless |
+| Server stores session | Client stores token |
+| Browser sends automatically | Sent manually in `Authorization` header |
+| Mostly used in traditional Django apps | Mostly used in REST APIs |
+
+### Example
+
+**Cookie Authentication**
+
+```
+Cookie:
+sessionid=ABC123
+```
+
+**JWT Authentication**
+
+```
+Authorization:
+Bearer eyJhbGciOi...
+```
+
+---
+
+## Interview Insight
+
+**Cookie is a storage mechanism.**
+
+**JWT is an authentication token.**
+
+They are **not competitors**—a JWT can even be stored inside a cookie.
+
+---
+
+## Quick Summary
+
+- Cookies store data in the browser.
+- JWT is an authentication token.
+- Modern REST APIs commonly use JWT, often stored in an **HttpOnly Secure Cookie**.
+
+
+## What is an Access Token?
+
+An **Access Token** is a short-lived token used to access protected APIs.
+
+After a successful login, the server issues an access token, and the client sends it with every request.
+
+Example
+
+```
+Authorization: Bearer eyJhbGciOi...
+```
+
+---
+
+## Quick Summary
+
+- Used to access protected APIs.
+- Short-lived.
+- Sent with every API request.
+
+## What is a Bearer Token?
+
+A **Bearer Token** is an access token sent in the `Authorization` header.
+
+Whoever possesses ("bears") the token can access the protected resource.
+
+Example
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+---
+
+## Interview Insight
+
+"Bearer" simply means **the holder of the token is treated as authenticated**.
+
+---
+
+## Quick Summary
+
+- Bearer Token = Access Token sent in the Authorization header.
+- Format:
+
+```
+Authorization: Bearer <token>
+```
+
+## What are the Security Threats to an Access Token?
+
+If an attacker steals an access token, they can access protected APIs until the token expires.
+
+### Protection
+
+- Use HTTPS.
+- Keep access tokens short-lived.
+- Store tokens securely (HttpOnly Cookies).
+- Use Refresh Tokens.
+
+---
+
+## Quick Summary
+
+- Stolen tokens can be misused.
+- Short expiry and HTTPS reduce the risk.
+
+## What is a Refresh Token?
+
+A **Refresh Token** is used to generate a new Access Token **without requiring the user to log in again**.
+
+### Flow
+
+```
+Login
+   │
+   ▼
+Access Token (15 mins)
+
+Refresh Token (7 Days)
+
+↓
+
+Access Token expires
+
+↓
+
+Use Refresh Token
+
+↓
+
+New Access Token
+```
+
+---
+
+## Interview Insight
+
+- **Access Token** → Short expiry
+- **Refresh Token** → Long expiry
+
+---
+
+## Quick Summary
+
+- Generates a new Access Token.
+- Provides a better user experience.
+- Has a longer lifetime than the Access Token.
+
+## Best Practices for Token Authentication
+
+- Always use **HTTPS**.
+- Keep Access Tokens short-lived.
+- Use Refresh Tokens.
+- Store tokens in **HttpOnly Secure Cookies**.
+- Never store sensitive information inside the token payload.
+
+---
+
+## Quick Summary
+
+Secure token authentication = HTTPS + Short-lived Access Token + Refresh Token + HttpOnly Cookie.
+
+## What is Cookie-Based Authentication?
+
+Cookie-Based Authentication uses a **Session ID stored in a browser cookie**.
+
+The browser automatically sends the cookie with every request, and the server verifies the session.
+
+---
+
+## Pros
+
+- Built into Django.
+- Supports HttpOnly cookies.
+- More secure against JavaScript access.
+
+---
+
+## Cons
+
+- Stateful.
+- Difficult to scale.
+- Vulnerable to CSRF attacks (without protection).
+
+---
+
+## Quick Summary
+
+- Uses **Session + Cookie**.
+- Best for traditional Django web applications.
+- REST APIs usually prefer **JWT Authentication**.
+
