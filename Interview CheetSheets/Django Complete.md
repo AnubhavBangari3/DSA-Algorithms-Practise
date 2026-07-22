@@ -3826,3 +3826,95 @@ No need to write `get()`, `post()`, `put()`, etc.
 - **ViewSet** reduces boilerplate and automatically supports CRUD operations.
 - **APIView** uses HTTP methods (`get()`, `post()`).
 - **ViewSet** uses actions (`list()`, `create()`, `retrieve()`, etc.).
+
+## Difference Between GenericAPIView and GenericViewSet
+
+Both are built on top of DRF and reduce boilerplate code, but they serve different purposes.
+
+---
+
+## GenericAPIView
+
+`GenericAPIView` extends `APIView` and provides common functionality like:
+
+- `queryset`
+- `serializer_class`
+- Pagination
+- Filtering
+- Searching
+
+It is usually combined with **Mixins**.
+
+```python
+from rest_framework import generics
+
+class EmployeeList(generics.ListCreateAPIView):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+```
+
+---
+
+## GenericViewSet
+
+`GenericViewSet` extends `GenericAPIView` and is designed to work with **Routers**.
+
+It is usually combined with **ModelViewSet** or other ViewSets to provide CRUD operations.
+
+```python
+from rest_framework.viewsets import ModelViewSet
+
+class EmployeeViewSet(ModelViewSet):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+```
+
+---
+
+## GenericAPIView vs GenericViewSet
+
+| GenericAPIView | GenericViewSet |
+|----------------|----------------|
+| Extends `APIView` | Extends `GenericAPIView` |
+| Used with Generic Views (`ListAPIView`, `CreateAPIView`, etc.) | Used with ViewSets (`ModelViewSet`, `ReadOnlyModelViewSet`) |
+| Uses HTTP methods (`get()`, `post()`) | Uses actions (`list()`, `retrieve()`, `create()`) |
+| Manual URL mapping | Usually used with Routers |
+| Good for custom APIs | Best for CRUD APIs |
+
+---
+
+## Interview Insight
+
+**Relationship**
+
+```
+APIView
+     │
+     ▼
+GenericAPIView
+     │
+     ├── ListAPIView
+     ├── CreateAPIView
+     ├── ListCreateAPIView
+     └── RetrieveUpdateDestroyAPIView
+
+
+GenericAPIView
+      │
+      ▼
+GenericViewSet
+      │
+      ├── ViewSet
+      ├── GenericViewSet
+      ├── ReadOnlyModelViewSet
+      └── ModelViewSet
+```
+
+---
+
+## Quick Summary
+
+- **GenericAPIView** adds reusable features like `queryset`, `serializer_class`, pagination, and filtering to `APIView`.
+- **GenericViewSet** builds on `GenericAPIView` and is designed for ViewSets and Routers.
+- Use **GenericAPIView** for customized generic views.
+- Use **ModelViewSet (GenericViewSet)** for standard CRUD APIs with minimal code.
