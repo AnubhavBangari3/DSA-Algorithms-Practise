@@ -294,3 +294,286 @@ A good answer is:
 - It provides built-in features like ORM, Admin Panel, Authentication, Security, Forms, Middleware, and Caching.
 - Django supports rapid development, scalability, and secure web applications.
 - Django REST Framework is commonly used with Django to build REST APIs.
+
+
+## Explain the MTV (Model-Template-View) Architecture Pattern in Django
+
+Django follows the **MTV (Model-Template-View)** architecture.
+
+It is very similar to the traditional **MVC (Model-View-Controller)** architecture, but the naming is different.
+
+The goal of MTV is to separate the application into different layers, making the code clean, reusable, and easier to maintain.
+
+---
+
+## Components of MTV
+
+### 1. Model
+
+The **Model** is responsible for interacting with the database.
+
+It defines the database structure and contains the business logic related to data.
+
+Example
+
+```python
+class Employee(models.Model):
+    name = models.CharField(max_length=100)
+    salary = models.IntegerField()
+```
+
+Responsibilities
+
+- Database operations
+- Business logic
+- Data validation
+- Relationships between tables
+
+---
+
+### 2. Template
+
+The **Template** is the presentation layer.
+
+It is responsible for displaying data to the user using HTML and Django Template Language (DTL).
+
+Example
+
+```html
+<h2>{{ employee.name }}</h2>
+<p>{{ employee.salary }}</p>
+```
+
+Responsibilities
+
+- UI rendering
+- Display dynamic data
+- Keep HTML separate from Python code
+
+---
+
+### 3. View
+
+The **View** acts as the bridge between the Model and Template.
+
+It receives the request, processes business logic, fetches data from the Model, and returns the appropriate response.
+
+Example
+
+```python
+from django.shortcuts import render
+from .models import Employee
+
+def employee_list(request):
+    employees = Employee.objects.all()
+    return render(request, "employees.html", {"employees": employees})
+```
+
+Responsibilities
+
+- Receive HTTP requests
+- Interact with Models
+- Pass data to Templates
+- Return HTTP responses
+
+---
+
+# Django Request-Response Lifecycle
+
+```
+Client
+   │
+   ▼
+Browser Request
+   │
+   ▼
+urls.py
+   │
+   ▼
+View
+   │
+   ▼
+Model (Database)
+   │
+   ▼
+View
+   │
+   ▼
+Template
+   │
+   ▼
+HTML Response
+   │
+   ▼
+Browser
+```
+
+---
+
+## Step-by-Step Flow
+
+### Step 1
+
+The client sends an HTTP request.
+
+Example
+
+```
+GET /employees/
+```
+
+---
+
+### Step 2
+
+`urls.py` matches the URL with the appropriate view.
+
+```python
+path("employees/", views.employee_list)
+```
+
+---
+
+### Step 3
+
+The View receives the request.
+
+```python
+def employee_list(request):
+```
+
+---
+
+### Step 4
+
+The View fetches data using the Model.
+
+```python
+employees = Employee.objects.all()
+```
+
+---
+
+### Step 5
+
+The View sends the data to the Template.
+
+```python
+return render(request, "employees.html", {"employees": employees})
+```
+
+---
+
+### Step 6
+
+The Template generates HTML.
+
+```html
+{% for employee in employees %}
+    {{ employee.name }}
+{% endfor %}
+```
+
+---
+
+### Step 7
+
+The generated HTML is returned to the browser.
+
+---
+
+# MTV vs MVC
+
+| MVC | Django MTV | Responsibility |
+|------|------------|----------------|
+| Model | Model | Database and Business Logic |
+| View | Template | User Interface (HTML) |
+| Controller | View | Handles requests and responses |
+
+---
+
+## Why Does Django Use MTV Instead of MVC?
+
+Django automatically handles many controller responsibilities internally.
+
+Instead of creating a separate Controller, Django uses:
+
+- URL Dispatcher (`urls.py`)
+- View Functions / Class-Based Views
+- Middleware
+
+Because of this, Django's **View behaves more like the Controller in MVC**, while the **Template behaves like the View in MVC**.
+
+---
+
+## MVC vs MTV Comparison
+
+| Feature | MVC | Django MTV |
+|---------|-----|------------|
+| Model | Database Logic | Database Logic |
+| View | User Interface | Template |
+| Controller | Handles Requests | Django View |
+| URL Routing | Controller | urls.py |
+| HTML Rendering | View | Template |
+| Business Logic | Controller | View |
+
+---
+
+## Real World Example
+
+Suppose a user opens:
+
+```
+https://example.com/employees/
+```
+
+Flow
+
+```
+Request
+      ↓
+urls.py
+      ↓
+employee_list View
+      ↓
+Employee Model
+      ↓
+Database
+      ↓
+View
+      ↓
+employees.html Template
+      ↓
+Browser Response
+```
+
+---
+
+## Interview Insight
+
+A very common interview question is:
+
+**Does Django follow MVC?**
+
+Answer:
+
+> Django follows the **MTV (Model-Template-View)** architecture. It is conceptually similar to MVC. In Django, the **View acts like the Controller**, while the **Template acts like the MVC View**.
+
+---
+
+## Common Mistakes
+
+- Saying Django follows MVC (officially it follows MTV).
+- Confusing Django View with MVC View.
+- Thinking Templates contain business logic (they should only handle presentation).
+
+---
+
+## Quick Summary
+
+- Django follows the **MTV architecture**.
+- **Model** → Database and Business Logic.
+- **View** → Handles requests, business logic, and responses.
+- **Template** → Displays data to the user.
+- Django's **View is equivalent to the Controller in MVC**.
+- Django's **Template is equivalent to the View in MVC**.
