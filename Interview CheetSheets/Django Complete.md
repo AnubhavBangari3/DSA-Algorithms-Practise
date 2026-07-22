@@ -2014,3 +2014,232 @@ Example:
 - `ManyToManyField` = **Many-to-Many** relationship.
 - `ManyToManyField` creates an intermediate table automatically.
 - Use `through` when you need extra fields in the relationship.
+
+## How do you define a Custom Model Field in Django?
+
+A **Custom Model Field** is created when Django's built-in fields are not sufficient.
+
+It allows you to define your own data type, validation, and database behavior.
+
+---
+
+## Basic Structure
+
+```python
+from django.db import models
+
+class UpperCaseField(models.CharField):
+
+    def to_python(self, value):
+        if value:
+            return value.upper()
+        return value
+```
+
+Now use it like any other field.
+
+```python
+class Employee(models.Model):
+    name = UpperCaseField(max_length=100)
+```
+
+If you save
+
+```
+anubhav
+```
+
+it becomes
+
+```
+ANUBHAV
+```
+
+---
+
+## When do we create Custom Fields?
+
+- Custom validation
+- Custom data conversion
+- Special business logic
+- Custom database types
+
+---
+
+## Important Methods
+
+| Method | Purpose |
+|---------|---------|
+| `to_python()` | Convert DB value to Python object |
+| `get_prep_value()` | Convert Python object before saving |
+| `db_type()` | Specify custom database type |
+
+---
+
+## Interview Insight
+
+Most projects **do not require custom model fields**.
+
+Usually, custom **validators**, **properties**, or **model methods** are enough.
+
+---
+
+## Quick Summary
+
+- Custom fields extend Django's built-in fields.
+- Used when built-in fields are insufficient.
+- Common methods are `to_python()`, `get_prep_value()`, and `db_type()`.
+- Rarely required in day-to-day Django development.
+
+## What is a QuerySet in Django?
+
+A **QuerySet** is a collection of database queries returned by Django ORM.
+
+It allows you to retrieve, filter, update, and delete data using Python instead of SQL.
+
+---
+
+## Creating a QuerySet
+
+```python
+employees = Employee.objects.all()
+```
+
+This returns all employees.
+
+---
+
+## Common QuerySet Methods
+
+### Get all records
+
+```python
+Employee.objects.all()
+```
+
+---
+
+### Filter records
+
+```python
+Employee.objects.filter(salary__gt=50000)
+```
+
+---
+
+### Get a single record
+
+```python
+Employee.objects.get(id=1)
+```
+
+---
+
+### Exclude records
+
+```python
+Employee.objects.exclude(salary__lt=30000)
+```
+
+---
+
+### Order data
+
+```python
+Employee.objects.order_by("-salary")
+```
+
+---
+
+### Count records
+
+```python
+Employee.objects.count()
+```
+
+---
+
+### Check if data exists
+
+```python
+Employee.objects.exists()
+```
+
+---
+
+### Update records
+
+```python
+Employee.objects.filter(id=1).update(salary=90000)
+```
+
+---
+
+### Delete records
+
+```python
+Employee.objects.filter(id=1).delete()
+```
+
+---
+
+## QuerySet is Lazy
+
+```python
+employees = Employee.objects.filter(salary__gt=50000)
+```
+
+No SQL query is executed here.
+
+The query runs only when you use the data.
+
+```python
+for emp in employees:
+    print(emp.name)
+```
+
+or
+
+```python
+list(employees)
+```
+
+---
+
+## `select_related()` vs `prefetch_related()`
+
+| Method | Used For |
+|----------|----------|
+| `select_related()` | ForeignKey & OneToOneField |
+| `prefetch_related()` | ManyToMany & Reverse ForeignKey |
+
+Example
+
+```python
+Book.objects.select_related("author")
+```
+
+```python
+Student.objects.prefetch_related("courses")
+```
+
+---
+
+## Interview Insight
+
+**Difference between `get()` and `filter()`?**
+
+| `get()` | `filter()` |
+|----------|------------|
+| Returns one object | Returns a QuerySet |
+| Raises exception if not found | Returns empty QuerySet if no match |
+| Used when exactly one record is expected | Used for multiple records |
+
+---
+
+## Quick Summary
+
+- A **QuerySet** represents database queries in Django.
+- It is **lazy**, meaning SQL executes only when needed.
+- Common methods are `all()`, `get()`, `filter()`, `exclude()`, `update()`, `delete()`, `count()`, and `exists()`.
+- Use `select_related()` for **ForeignKey/OneToOne** and `prefetch_related()` for **ManyToMany** relationships.
