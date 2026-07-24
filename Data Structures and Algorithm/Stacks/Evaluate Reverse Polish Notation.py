@@ -35,21 +35,16 @@ class Solution:
 Algorithm
 
 1. Create an empty stack.
-
 2. Traverse each token.
-
 3. If the token is a number:
    - Convert it to an integer.
    - Push it onto the stack.
-
 4. If the token is an operator:
    - Pop the second operand.
    - Pop the first operand.
    - Perform the operation.
    - Push the result back onto the stack.
-
 5. Continue until all tokens are processed.
-
 6. The last remaining element in the stack is the answer.
 
 Pattern:
