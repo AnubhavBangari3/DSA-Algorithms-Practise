@@ -104,3 +104,14 @@ print(rate_limiter.allow_request("user_1"))      # True
 # Limit reached.
 # No request is removed because 10 seconds have not passed.
 print(rate_limiter.allow_request("user_1"))      # False
+
+'''
+Time Complexity: O(1) per request because every timestamp is inserted once and removed once. Worst case is O(n) when many expired requests are removed in a single call.
+
+Space Complexity: O(k × m), where k is the number of unique users and m is the maximum requests stored per user within the sliding window.
+
+Thread Safety: Achieved using threading.Lock().
+
+Memory Leak Prevention: Expired timestamps are continuously removed using popleft(), so memory usage stays bounded.
+
+'''
