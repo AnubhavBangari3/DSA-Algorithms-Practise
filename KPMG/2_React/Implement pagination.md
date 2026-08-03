@@ -1,42 +1,33 @@
-# Implement Pagination
-
-## Example
+# Implement Pagination (Simple Version)
 
 ```jsx
 import React, { useState } from "react";
 
 function App() {
-  const items = Array.from({ length: 50 }, (_, i) => `Item ${i + 1}`);
+  const items = [1,2,3,4,5,6,7,8,9,10];
 
-  const itemsPerPage = 5;
-  const [currentPage, setCurrentPage] = useState(1);
+  const [page, setPage] = useState(1);
+  const perPage = 3;
 
-  const lastIndex = currentPage * itemsPerPage;
-  const firstIndex = lastIndex - itemsPerPage;
-
-  const currentItems = items.slice(firstIndex, lastIndex);
-  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const start = (page - 1) * perPage;
+  const currentItems = items.slice(start, start + perPage);
 
   return (
     <div>
-      <ul>
-        {currentItems.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+      {currentItems.map((item) => (
+        <p key={item}>{item}</p>
+      ))}
 
       <button
-        onClick={() => setCurrentPage((prev) => prev - 1)}
-        disabled={currentPage === 1}
+        onClick={() => setPage(page - 1)}
+        disabled={page === 1}
       >
         Previous
       </button>
 
-      <span> Page {currentPage} of {totalPages} </span>
-
       <button
-        onClick={() => setCurrentPage((prev) => prev + 1)}
-        disabled={currentPage === totalPages}
+        onClick={() => setPage(page + 1)}
+        disabled={start + perPage >= items.length}
       >
         Next
       </button>
@@ -51,7 +42,11 @@ export default App;
 
 ## Interview Explanation
 
-- Store the current page using `useState`.
-- Calculate the start and end indexes.
-- Use `slice()` to get items for the current page.
-- Disable **Previous** on the first page and **Next** on the last page.
+- Store the current page in state.
+- Calculate the starting index using:
+  ```js
+  (page - 1) * perPage
+  ```
+- Display items using `slice()`.
+- Disable **Previous** on the first page.
+- Disable **Next** when there are no more items.
