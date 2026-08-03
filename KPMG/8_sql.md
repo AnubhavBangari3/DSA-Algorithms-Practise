@@ -295,3 +295,96 @@ WHERE department = 'IT';
 - Avoid `SELECT *`
 - Use `WHERE` clause
 - Analyze execution plan
+
+# ROW_NUMBER() vs RANK() vs DENSE_RANK()
+
+| Function | Duplicate Values | Gap in Ranking | Use Case |
+|----------|------------------|----------------|----------|
+| `ROW_NUMBER()` | No | No | Unique numbering |
+| `RANK()` | Yes | Yes | Competition ranking |
+| `DENSE_RANK()` | Yes | No | Ranking without gaps |
+
+## Example
+
+### Employee Table
+
+| Name | Salary |
+|------|--------|
+| Alice | 10000 |
+| Bob | 9000 |
+| Charlie | 9000 |
+| David | 8000 |
+
+### ROW_NUMBER()
+
+```sql
+SELECT name, salary,
+ROW_NUMBER() OVER (ORDER BY salary DESC) AS row_num
+FROM Employee;
+```
+
+| Name | Salary | ROW_NUMBER |
+|------|--------|------------|
+| Alice | 10000 | 1 |
+| Bob | 9000 | 2 |
+| Charlie | 9000 | 3 |
+| David | 8000 | 4 |
+
+**Explanation:** Every row gets a unique number, even if salaries are the same.
+
+---
+
+### RANK()
+
+```sql
+SELECT name, salary,
+RANK() OVER (ORDER BY salary DESC) AS rank_num
+FROM Employee;
+```
+
+| Name | Salary | RANK |
+|------|--------|------|
+| Alice | 10000 | 1 |
+| Bob | 9000 | 2 |
+| Charlie | 9000 | 2 |
+| David | 8000 | 4 |
+
+**Explanation:** Same salary gets the same rank, but the next rank is skipped.
+
+---
+
+### DENSE_RANK()
+
+```sql
+SELECT name, salary,
+DENSE_RANK() OVER (ORDER BY salary DESC) AS dense_rank
+FROM Employee;
+```
+
+| Name | Salary | DENSE_RANK |
+|------|--------|------------|
+| Alice | 10000 | 1 |
+| Bob | 9000 | 2 |
+| Charlie | 9000 | 2 |
+| David | 8000 | 3 |
+
+**Explanation:** Same salary gets the same rank, and no ranks are skipped.
+
+---
+
+# Quick Memory Trick
+
+- **ROW_NUMBER()** → Every row gets a **unique number**.
+- **RANK()** → Same rank for ties, **gaps appear**.
+- **DENSE_RANK()** → Same rank for ties, **no gaps**.
+
+## Interview Example
+
+If salaries are **100, 90, 90, 80**:
+
+| Salary | ROW_NUMBER | RANK | DENSE_RANK |
+|--------|------------|------|------------|
+| 100 | 1 | 1 | 1 |
+| 90 | 2 | 2 | 2 |
+| 90 | 3 | 2 | 2 |
+| 80 | 4 | 4 | 3 |
