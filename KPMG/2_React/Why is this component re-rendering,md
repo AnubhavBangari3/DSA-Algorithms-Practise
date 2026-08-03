@@ -1,0 +1,388 @@
+# Why is this React Component Re-rendering?
+
+## What is a Re-render?
+
+A **re-render** occurs when React calls a component function again to calculate what the UI should look like. React then compares the new Virtual DOM with the previous one and updates the actual DOM only if necessary.
+
+---
+
+# When Does a Component Re-render?
+
+## 1. State Changes
+
+Whenever the component's state changes using `setState` or `useState`, React re-renders the component.
+
+```jsx
+import React, { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  console.log("Counter Rendered");
+
+  return (
+    <>
+      <h2>{count}</h2>
+
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
+    </>
+  );
+}
+
+export default Counter;
+```
+
+### Output
+
+```
+Counter Rendered
+```
+
+Every button click causes another render.
+
+---
+
+## 2. Props Change
+
+If a parent passes different props, the child re-renders.
+
+```jsx
+function Child({ name }) {
+  console.log("Child Rendered");
+  return <h2>{name}</h2>;
+}
+
+function App() {
+  const [name, setName] = React.useState("John");
+
+  return (
+    <>
+      <Child name={name} />
+
+      <button onClick={() => setName("Alice")}>
+        Change Name
+      </button>
+    </>
+  );
+}
+```
+
+When `name` changes:
+
+```
+Child Rendered
+```
+
+---
+
+## 3. Parent Component Re-renders
+
+Even if the child's props don't change, React re-renders child components whenever the parent re-renders (unless optimized).
+
+```jsx
+function Child() {
+  console.log("Child Rendered");
+
+  return <h2>Child Component</h2>;
+}
+
+function App() {
+  const [count, setCount] = React.useState(0);
+
+  return (
+    <>
+      <Child />
+
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
+    </>
+  );
+}
+```
+
+Every click prints:
+
+```
+Child Rendered
+```
+
+---
+
+## Prevent Child Re-render
+
+```jsx
+const Child = React.memo(function Child() {
+  console.log("Child Rendered");
+
+  return <h2>Child Component</h2>;
+});
+```
+
+Now the child renders only when its props change.
+
+---
+
+## 4. Context Value Changes
+
+Whenever a Context Provider updates its value, all components using that context re-render.
+
+```jsx
+const ThemeContext = React.createContext();
+
+function Child() {
+  const theme = React.useContext(ThemeContext);
+
+  console.log("Rendered");
+
+  return <h2>{theme}</h2>;
+}
+```
+
+Changing the provider value causes:
+
+```
+Rendered
+```
+
+---
+
+## 5. Key Changes
+
+Changing a component's `key` forces React to unmount and recreate it.
+
+```jsx
+<MyComponent key={userId} />
+```
+
+If `userId` changes:
+
+- Old component unmounts
+- New component mounts
+
+---
+
+# How to Detect Re-renders
+
+## Method 1 - Console Log
+
+```jsx
+function Child() {
+  console.log("Child Rendered");
+
+  return <h1>Hello</h1>;
+}
+```
+
+---
+
+## Method 2 - React DevTools Profiler
+
+The Profiler shows:
+
+- Which component rendered
+- Why it rendered
+- Render duration
+- Performance bottlenecks
+
+---
+
+## Method 3 - Why Did You Render
+
+Install:
+
+```bash
+npm install @welldone-software/why-did-you-render
+```
+
+It logs unnecessary renders during development.
+
+---
+
+# Common Interview Question
+
+## Why is this component re-rendering?
+
+```jsx
+function Child() {
+  console.log("Child Rendered");
+
+  return <h2>Child</h2>;
+}
+
+function Parent() {
+  const [count, setCount] = React.useState(0);
+
+  return (
+    <>
+      <Child />
+
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
+    </>
+  );
+}
+```
+
+### Answer
+
+`setCount()` changes the parent's state.
+
+React re-renders the parent.
+
+Since the parent re-rendered, React also re-renders all of its children by default.
+
+---
+
+# React.memo Example
+
+```jsx
+const Child = React.memo(function Child() {
+  console.log("Child Rendered");
+
+  return <h2>Child</h2>;
+});
+```
+
+Now `Child` only re-renders when its props change.
+
+---
+
+# Why React.memo Sometimes Doesn't Work
+
+```jsx
+const Child = React.memo(({ onClick }) => {
+  console.log("Child Render");
+});
+
+function Parent() {
+  return (
+    <Child
+      onClick={() => console.log("Clicked")}
+    />
+  );
+}
+```
+
+Every render creates a new function:
+
+```jsx
+() => console.log("Clicked")
+```
+
+Since the function reference changes, `React.memo` detects changed props and re-renders.
+
+---
+
+## Fix Using useCallback
+
+```jsx
+const handleClick = React.useCallback(() => {
+  console.log("Clicked");
+}, []);
+
+<Child onClick={handleClick} />
+```
+
+Now the function reference stays the same between renders.
+
+---
+
+# Common Reasons for Unnecessary Re-renders
+
+- Parent re-renders
+- New object literals
+
+```jsx
+<User style={{ color: "red" }} />
+```
+
+- New array literals
+
+```jsx
+<List items={[1, 2, 3]} />
+```
+
+- New function references
+
+```jsx
+<button onClick={() => doSomething()} />
+```
+
+---
+
+# Optimization Techniques
+
+## React.memo
+
+Prevents re-render if props are unchanged.
+
+```jsx
+const Child = React.memo(ChildComponent);
+```
+
+---
+
+## useCallback
+
+Memoizes functions.
+
+```jsx
+const handleClick = useCallback(() => {}, []);
+```
+
+---
+
+## useMemo
+
+Memoizes expensive calculations.
+
+```jsx
+const total = useMemo(() => calculateTotal(), [items]);
+```
+
+---
+
+## Split Components
+
+Instead of:
+
+```
+App
+ ├── Header
+ ├── Sidebar
+ ├── Dashboard
+ ├── Footer
+```
+
+Split state so that updating one section doesn't force unrelated sections to re-render.
+
+---
+
+# Interview Summary
+
+A React component re-renders when:
+
+1. State changes (`useState`, `useReducer`)
+2. Props change
+3. Parent component re-renders
+4. Context value changes
+5. Component key changes
+6. Force update occurs
+
+To reduce unnecessary re-renders:
+
+- `React.memo`
+- `useCallback`
+- `useMemo`
+- Avoid creating new object, array, or function references on every render
+- Split components into smaller, focused units
+
+---
+
+# One-Line Interview Answer
+
+> A React component re-renders whenever its state changes, its props change, its parent re-renders, the context it consumes changes, or it is remounted (for example, by changing its `key`). To optimize performance, I use `React.memo`, `useCallback`, and `useMemo` where appropriate.
