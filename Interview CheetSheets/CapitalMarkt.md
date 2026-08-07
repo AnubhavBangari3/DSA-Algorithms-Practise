@@ -418,12 +418,222 @@ Used for securities settlement.
 
 ---
 
-# Interview Tip
+# Asset Management
 
-If the interviewer asks:
+## What is it?
+Managing investments like stocks, bonds, and mutual funds on behalf of clients to grow their money.
 
-**"Which SWIFT messages have you worked on?"**
+## Easy Example
+A mutual fund company invests your money in different stocks and bonds.
 
-You can answer:
+## Interview Answer
+> Asset Management is the process of managing client investments to maximize returns while controlling risk.
 
-> In TCS BaNCS, I worked primarily with securities settlement messages such as MT540–MT548, MT530, MT596, MT598, and payment messages like MT103 and MT202. I also have knowledge of ISO 20022 messages like sese.030 used for settlement status processing. :contentReference[oaicite:1]{index=1}
+---
+
+# Investment Operations
+
+## What is it?
+The back-office process that supports investment activities after a trade is placed.
+
+## Includes
+- Trade processing
+- Settlement
+- Reconciliation
+- Reporting
+
+## Easy Example
+After a trader buys a bond, the operations team ensures it settles correctly.
+
+## Interview Answer
+> Investment Operations handles all post-trade activities to ensure transactions are processed accurately.
+
+---
+
+# Capital Markets
+
+## What is it?
+A financial market where long-term securities like stocks and bonds are bought and sold.
+
+## Easy Example
+A company issues bonds to raise money from investors.
+
+## Interview Answer
+> Capital Markets allow companies and governments to raise funds by issuing securities.
+
+---
+
+# Trade Lifecycle
+
+## What is it?
+The complete journey of a trade from execution to settlement.
+
+## Steps
+1. Trade Execution
+2. Trade Confirmation
+3. Settlement
+4. Reconciliation
+
+## Easy Example
+You buy a bond → trade is confirmed → payment is made → securities are delivered.
+
+## Interview Answer
+> Trade Lifecycle is the end-to-end process of a trade from execution until settlement.
+
+---
+
+# Trade Confirmation
+
+## What is it?
+Verification that buyer and seller agree on trade details.
+
+## Easy Example
+Both parties confirm price, quantity, and settlement date.
+
+## Interview Answer
+> Trade Confirmation ensures both parties agree on all trade details before settlement.
+
+---
+
+# Trade Settlement
+
+## What is it?
+The actual exchange of securities and money.
+
+## Easy Example
+Buyer pays cash and receives bonds.
+
+## Interview Answer
+> Trade Settlement is the process where cash and securities are exchanged.
+
+---
+
+# Reconciliation
+
+## What is it?
+Comparing records between two systems to ensure they match.
+
+## Easy Example
+Bank records are compared with custodian records.
+
+## Interview Answer
+> Reconciliation verifies that all trade records match across different systems.
+
+---
+
+# Custody Services
+
+## What is it?
+Safe keeping of securities on behalf of investors.
+
+## Services
+- Hold securities
+- Collect dividends
+- Process corporate actions
+
+## Easy Example
+A bank safely stores your shares electronically.
+
+## Interview Answer
+> Custody Services securely hold client securities and process related activities.
+
+---
+
+# Settlement Processing
+
+## What is it?
+Processing all activities required to complete settlement.
+
+## Includes
+- Validate trade
+- Check cash
+- Check securities
+- Send SWIFT messages
+
+## Interview Answer
+> Settlement Processing ensures securities and cash are exchanged successfully.
+
+---
+
+# US Fixed Income
+
+## What is it?
+Debt securities issued in the US market.
+
+## Examples
+- Treasury Bonds
+- Corporate Bonds
+- Municipal Bonds
+
+## Interview Answer
+> US Fixed Income refers to debt securities that provide regular interest payments.
+
+---
+
+# T2S Settlement
+
+## What is it?
+Target2-Securities (Europe's common settlement platform).
+
+## Benefit
+One platform for settling securities across Europe.
+
+## Interview Answer
+> T2S is a European platform that standardizes securities settlement across participating countries.
+
+---
+
+# Non-T2S Settlement
+
+## What is it?
+Settlement performed outside the T2S platform.
+
+## Example
+Local market settlement systems.
+
+## Interview Answer
+> Non-T2S Settlement refers to settlements processed outside the European T2S platform.
+
+---
+
+# Corporate Bonds
+
+## What is it?
+Bonds issued by companies to raise money.
+
+## Easy Example
+A company borrows ₹100 crore from investors and pays interest.
+
+## Interview Answer
+> Corporate Bonds are debt securities issued by companies to raise capital.
+
+---
+
+# Asset-Backed Securities (ABS)
+
+## What is it?
+Securities backed by a pool of assets.
+
+## Assets Can Be
+- Home loans
+- Car loans
+- Credit card loans
+
+## Easy Example
+Many car loans are combined and sold as one investment.
+
+## Interview Answer
+> Asset-Backed Securities are investments backed by a collection of loans or receivables.
+
+---
+
+# Trust Structures
+
+## What is it?
+A legal structure where assets are managed by a trustee for investors.
+
+## Easy Example
+A trustee manages loan payments and distributes money to investors.
+
+## Interview Answer
+> Trust Structures hold and manage assets on behalf of investors through a trustee.
