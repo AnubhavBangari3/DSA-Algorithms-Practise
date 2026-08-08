@@ -303,3 +303,310 @@ class Solution:
 
         return result
 ```
+
+# Sliding Window
+
+## 3. Longest Substring Without Repeating Characters
+
+```python
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+
+        # Store characters in current window
+        seen = set()
+
+        left = 0
+        max_length = 0
+
+        # Expand window using right pointer
+        for right in range(len(s)):
+
+            # Remove characters until duplicate is gone
+            while s[right] in seen:
+                seen.remove(s[left])
+                left += 1
+
+            # Add current character
+            seen.add(s[right])
+
+            # Calculate current window length
+            max_length = max(max_length, right - left + 1)
+
+        return max_length
+```
+
+---
+
+## 643. Maximum Average Subarray I
+
+```python
+class Solution:
+    def findMaxAverage(self, nums: List[int], k: int) -> float:
+
+        # Sum of first window
+        window_sum = sum(nums[:k])
+
+        max_sum = window_sum
+
+        # Slide the window
+        for right in range(k, len(nums)):
+
+            # Add new element and remove old element
+            window_sum += nums[right]
+            window_sum -= nums[right - k]
+
+            # Update maximum sum
+            max_sum = max(max_sum, window_sum)
+
+        # Average of best window
+        return max_sum / k
+```
+
+---
+
+## 567. Permutation in String
+
+```python
+class Solution:
+    def checkInclusion(self, s1: str, s2: str) -> bool:
+
+        # If s1 is bigger, permutation is impossible
+        if len(s1) > len(s2):
+            return False
+
+        # Frequency of characters
+        need = {}
+        window = {}
+
+        # Count characters of s1
+        for ch in s1:
+            need[ch] = need.get(ch, 0) + 1
+
+        left = 0
+
+        for right in range(len(s2)):
+
+            # Add current character to window
+            ch = s2[right]
+            window[ch] = window.get(ch, 0) + 1
+
+            # Keep window size equal to len(s1)
+            if right - left + 1 > len(s1):
+                old = s2[left]
+                window[old] -= 1
+
+                # Remove zero-count characters
+                if window[old] == 0:
+                    del window[old]
+
+                left += 1
+
+            # Same frequency means permutation found
+            if window == need:
+                return True
+
+        return False
+```
+
+---
+
+## 424. Longest Repeating Character Replacement
+
+```python
+class Solution:
+    def characterReplacement(self, s: str, k: int) -> int:
+
+        # Store character frequencies
+        freq = {}
+
+        left = 0
+        max_freq = 0
+        max_length = 0
+
+        for right in range(len(s)):
+
+            # Add current character
+            freq[s[right]] = freq.get(s[right], 0) + 1
+
+            # Highest frequency inside window
+            max_freq = max(max_freq, freq[s[right]])
+
+            # Characters to replace =
+            # window size - most frequent character count
+            while (right - left + 1) - max_freq > k:
+
+                freq[s[left]] -= 1
+                left += 1
+
+            # Update longest valid window
+            max_length = max(max_length, right - left + 1)
+
+        return max_length
+```
+
+---
+
+# Binary Search
+
+## 704. Binary Search
+
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+
+        left = 0
+        right = len(nums) - 1
+
+        while left <= right:
+
+            # Find middle
+            mid = (left + right) // 2
+
+            # Target found
+            if nums[mid] == target:
+                return mid
+
+            # Search right half
+            elif nums[mid] < target:
+                left = mid + 1
+
+            # Search left half
+            else:
+                right = mid - 1
+
+        return -1
+```
+
+---
+
+## 35. Search Insert Position
+
+```python
+class Solution:
+    def searchInsert(self, nums: List[int], target: int) -> int:
+
+        left = 0
+        right = len(nums) - 1
+
+        while left <= right:
+
+            mid = (left + right) // 2
+
+            # Target found
+            if nums[mid] == target:
+                return mid
+
+            # Search right
+            elif nums[mid] < target:
+                left = mid + 1
+
+            # Search left
+            else:
+                right = mid - 1
+
+        # Left gives correct insertion position
+        return left
+```
+
+---
+
+## 69. Sqrt(x)
+
+```python
+class Solution:
+    def mySqrt(self, x: int) -> int:
+
+        # Handle small numbers
+        if x < 2:
+            return x
+
+        left = 1
+        right = x
+
+        while left <= right:
+
+            mid = (left + right) // 2
+
+            square = mid * mid
+
+            # Exact square root
+            if square == x:
+                return mid
+
+            # Need bigger number
+            elif square < x:
+                left = mid + 1
+
+            # Need smaller number
+            else:
+                right = mid - 1
+
+        # right is the floor square root
+        return right
+```
+
+---
+
+## 33. Search in Rotated Sorted Array
+
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+
+        left = 0
+        right = len(nums) - 1
+
+        while left <= right:
+
+            mid = (left + right) // 2
+
+            # Target found
+            if nums[mid] == target:
+                return mid
+
+            # Left half is sorted
+            if nums[left] <= nums[mid]:
+
+                # Target lies inside left half
+                if nums[left] <= target < nums[mid]:
+                    right = mid - 1
+                else:
+                    left = mid + 1
+
+            # Right half is sorted
+            else:
+
+                # Target lies inside right half
+                if nums[mid] < target <= nums[right]:
+                    left = mid + 1
+                else:
+                    right = mid - 1
+
+        return -1
+```
+
+---
+
+## 153. Find Minimum in Rotated Sorted Array
+
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+
+        left = 0
+        right = len(nums) - 1
+
+        while left < right:
+
+            mid = (left + right) // 2
+
+            # Minimum is on right side
+            if nums[mid] > nums[right]:
+                left = mid + 1
+
+            # Minimum is at mid or on left side
+            else:
+                right = mid
+
+        return nums[left]
+```
