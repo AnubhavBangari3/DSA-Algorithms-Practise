@@ -905,3 +905,205 @@ Numerical representation of the chunk.
 ```text
 [0.21, -0.45, 0.78, 0.12, ...]
 
+# Chunking in RAG — Why, Size, and Overlap
+
+## What is Chunking?
+
+**Chunking means dividing a large document into smaller pieces of text before creating embeddings and storing them in the Vector DB.**
+
+Example:
+
+A PDF has 50 pages.
+
+Instead of creating one embedding for the entire PDF:
+
+Document
+↓
+Split into smaller chunks
+↓
+Create embedding for each chunk
+↓
+Store chunks in Vector DB
+
+Example:
+
+Chunk 1 → Introduction  
+Chunk 2 → Leave Policy  
+Chunk 3 → Work From Home Policy  
+Chunk 4 → Insurance Policy
+
+---
+
+# Why Do We Need Chunking?
+
+## 1. Better Retrieval Accuracy
+
+Suppose a 50-page HR document contains information about:
+
+- Salary
+- Leave
+- Insurance
+- Work From Home
+- Appraisal
+
+If we create one embedding for the entire document, it represents too many topics.
+
+Instead, if we create smaller chunks:
+
+User asks:
+
+> "How many annual leaves do employees get?"
+
+The system can retrieve only the chunk containing the **leave policy**.
+
+So:
+
+Large Document → Less precise retrieval
+
+Smaller Relevant Chunks → Better retrieval
+
+---
+
+## 2. LLM Context Window
+
+LLMs have a limited context window.
+
+We cannot keep sending complete documents to the LLM for every question.
+
+Instead:
+
+User Question
+↓
+Retrieve Top-K Relevant Chunks
+↓
+Send only those chunks to LLM
+
+This saves tokens and reduces cost.
+
+---
+
+## 3. Better Embeddings
+
+Embeddings work better when the text represents a relatively focused meaning.
+
+For example:
+
+### Large Chunk
+
+Contains:
+
+Leave Policy + Salary + Insurance + Appraisal + Remote Work
+
+The embedding represents many concepts.
+
+### Smaller Chunk
+
+Contains:
+
+> "Employees receive 20 annual paid leaves."
+
+The embedding has a much more focused meaning.
+
+This generally improves semantic retrieval.
+
+---
+
+# What is Chunk Size?
+
+**Chunk size is the amount of text we put into one chunk.**
+
+It is commonly measured using:
+
+- Tokens
+- Characters
+- Words
+
+For LLM applications, **tokens are usually the better measurement**.
+
+Example:
+
+```text
+Chunk Size = 500 tokens
+
+# Chunking Types: Fixed, Recursive, Semantic + Dense Retrieval
+
+# 1. Fixed-Size Chunking
+
+**Fixed-size chunking** divides text into chunks of approximately the same size, based on characters, words, or tokens.
+
+Example:
+
+```text
+Document = 5000 tokens
+
+Chunk Size = 500 tokens
+Overlap = 50 tokens
+
+Chunk 1 → Token 1–500
+Chunk 2 → Token 451–950
+Chunk 3 → Token 901–1400
+...
+
+# Sparse Retrieval / BM25 in RAG
+
+> **Note:** It is **BM25**, not BM2.
+
+# What is Sparse Retrieval?
+
+**Sparse retrieval is a keyword-based retrieval technique that finds documents based mainly on the words present in the user query and documents.**
+
+Unlike dense retrieval, it does **not depend on semantic embeddings** for matching.
+
+Simple way to remember:
+
+> **Dense Retrieval = Meaning / Embeddings**
+>
+> **Sparse Retrieval = Keywords / Terms**
+
+---
+
+# Simple Example
+
+Suppose our documents contain:
+
+```text
+Document 1:
+"SWIFT MT548 is used for settlement status."
+
+Document 2:
+"Employees receive 20 annual leaves."
+
+Document 3:
+"MT103 is used for customer credit transfer."
+
+# Semantic Search in RAG
+
+## What is Semantic Search?
+
+**Semantic search retrieves information based on the meaning of the user's query rather than only matching exact keywords.**
+
+In RAG, semantic search is commonly implemented using:
+
+**Embeddings + Vector Database + Similarity Search**
+
+Simple definition:
+
+> **Semantic Search = Search by meaning, not just exact words.**
+
+---
+
+# Simple Example
+
+Suppose the document contains:
+
+> "Employees receive 20 annual paid leaves."
+
+User asks:
+
+> "How many vacation days do I get?"
+
+There is no exact match between:
+
+```text
+vacation days
+
