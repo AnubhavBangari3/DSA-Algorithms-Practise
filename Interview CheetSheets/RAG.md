@@ -576,3 +576,281 @@ Benefits:
 
 **Private Data → Updated Data → Retrieval → Grounding → Reduce Hallucination → No Retraining → Citations**
 
+# Embeddings in RAG
+
+## What are Embeddings?
+
+**Embeddings are numerical representations of text that capture its semantic meaning.**
+
+In simple words:
+
+> **Embedding converts text into a vector (list of numbers) so that a computer can compare the meaning of different texts.**
+
+Example:
+
+"How can I reset my password?"
+
+↓ Embedding Model ↓
+
+[0.21, -0.45, 0.78, 0.12, ...]
+
+The actual embedding can contain hundreds or thousands of numbers.
+
+---
+
+# Why Do We Need Embeddings in RAG?
+
+Computers cannot directly understand the semantic meaning of sentences.
+
+For example:
+
+> "How many paid leaves do employees get?"
+
+and
+
+> "What is the annual vacation allowance?"
+
+These sentences use different words but have a **similar meaning**.
+
+Embeddings place semantically similar text closer together in vector space.
+
+This allows RAG to retrieve relevant information even when the user's exact words are not present in the document.
+
+---
+
+# Where Are Embeddings Used in RAG?
+
+There are two important places.
+
+## 1. Document Embeddings
+
+First, documents are divided into chunks.
+
+Each chunk is converted into an embedding.
+
+Document
+   ↓
+Chunking
+   ↓
+Chunk 1 → Embedding → [0.2, 0.5, ...]
+Chunk 2 → Embedding → [0.7, 0.1, ...]
+Chunk 3 → Embedding → [0.3, 0.8, ...]
+   ↓
+Vector Database
+
+The vector database stores:
+
+- Original chunk
+- Embedding/vector
+- Metadata
+
+---
+
+## 2. Query Embedding
+
+When the user asks a question, we convert the question into an embedding using the same or a compatible embedding model.
+
+User Question
+      ↓
+Embedding Model
+      ↓
+Query Vector
+      ↓
+Compare with stored vectors
+      ↓
+Retrieve similar chunks
+
+---
+
+# Simple Example
+
+Suppose our Vector DB contains:
+
+Chunk 1:
+
+> "Employees receive 20 annual paid leaves."
+
+Chunk 2:
+
+> "The company provides health insurance."
+
+Chunk 3:
+
+> "Employees receive laptops during onboarding."
+
+User asks:
+
+> "How many vacation days do I get?"
+
+The words **vacation days** and **annual paid leaves** are different.
+
+But their embeddings should be semantically similar.
+
+Therefore:
+
+User Query
+      ↓
+Query Embedding
+      ↓
+Similarity Search
+      ↓
+Chunk 1 has highest similarity
+      ↓
+Retrieve Chunk 1
+      ↓
+Send it to LLM
+
+---
+
+# How Are Embeddings Compared?
+
+A common method is **Cosine Similarity**.
+
+It measures how similar two vectors are based on their direction.
+
+Conceptually:
+
+Query Embedding
+      ↓
+Compare with
+      ↓
+Chunk Embeddings
+      ↓
+Similarity Scores
+
+Example:
+
+Chunk 1 → 0.92  
+Chunk 2 → 0.41  
+Chunk 3 → 0.25
+
+Chunk 1 has the highest similarity, so it is retrieved.
+
+---
+
+# Embedding Model vs LLM
+
+This is an important interview distinction.
+
+### Embedding Model
+
+Converts:
+
+Text → Vector
+
+Used mainly for:
+
+- Semantic search
+- Retrieval
+- Similarity comparison
+
+### LLM
+
+Converts:
+
+Prompt + Context → Natural Language Answer
+
+Used mainly for:
+
+- Understanding context
+- Reasoning
+- Generating responses
+
+So in RAG:
+
+Documents
+   ↓
+Embedding Model
+   ↓
+Vector DB
+
+User Query
+   ↓
+Embedding Model
+   ↓
+Retrieval
+   ↓
+Relevant Context
+   ↓
+LLM
+   ↓
+Answer
+
+---
+
+# Example Embedding Models
+
+Common embedding models include:
+
+- OpenAI Embeddings
+- Azure OpenAI Embeddings
+- Hugging Face Sentence Transformers
+- `all-MiniLM-L6-v2`
+- Google embedding models
+
+For example, `all-MiniLM-L6-v2` produces **384-dimensional embeddings**.
+
+That means every text chunk is represented using a vector containing 384 numbers.
+
+---
+
+# Important Interview Point
+
+We generally use the **same embedding model for documents and user queries**.
+
+Why?
+
+Because both vectors need to exist in the **same vector space** for meaningful similarity comparison.
+
+If you change the embedding model, you will normally need to **re-embed your stored documents**.
+
+---
+
+# Embeddings vs Keywords
+
+Traditional keyword search mainly looks for matching words.
+
+Example:
+
+Document:
+
+> "Employees receive 20 annual leaves."
+
+Query:
+
+> "What is my vacation allowance?"
+
+There may be no exact keyword match.
+
+Embedding-based search understands that:
+
+**vacation allowance ≈ annual leaves**
+
+That is why embeddings are useful for **semantic search**.
+
+---
+
+# Interview Answer
+
+**"Embeddings are numerical vector representations of text that capture semantic meaning.**
+
+**In RAG, after splitting documents into chunks, I pass each chunk through an embedding model and store the generated vectors in a vector database.**
+
+**When the user asks a question, I also convert the query into an embedding. Then I compare the query vector with the stored document vectors using similarity search, commonly cosine similarity, and retrieve the Top-K most relevant chunks.**
+
+**The retrieved chunks are then provided as context to the LLM for generating the final answer.**
+
+**The main advantage of embeddings is that they allow semantic search, so the query and document don't need to contain exactly the same words as long as their meanings are similar."**
+
+---
+
+# One-Line Answer
+
+> **Embeddings convert text into numerical vectors that represent semantic meaning, allowing a RAG system to find relevant document chunks using vector similarity search.**
+
+---
+
+# Keywords to Remember
+
+**Text → Embedding Model → Vector → Vector DB → Query Vector → Cosine Similarity → Top-K → Relevant Chunks → LLM**
+
