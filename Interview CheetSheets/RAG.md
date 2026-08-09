@@ -366,3 +366,213 @@ RAG helps us:
 
 **Documents → Chunking → Embeddings → Vector DB → Query Embedding → Similarity Search → Top-K → Reranking → Context → LLM → Answer**
 
+# Why Do We Use RAG?
+
+## Simple Answer
+
+We use **RAG (Retrieval-Augmented Generation)** because an LLM has some limitations:
+
+- Its training knowledge may be outdated.
+- It does not automatically know our private/company data.
+- It can hallucinate and give incorrect answers.
+- Retraining or fine-tuning the model whenever data changes is expensive.
+
+RAG solves this by **retrieving relevant information from an external knowledge source and providing it to the LLM as context before generating the answer.**
+
+---
+
+## Example
+
+Suppose a company has an internal HR policy:
+
+> "Employees receive 20 paid leaves per year."
+
+The LLM may not know this because this information is private.
+
+With RAG:
+
+User Question  
+↓  
+"How many paid leaves do employees get?"  
+↓  
+Search Company Knowledge Base  
+↓  
+Retrieve: "Employees receive 20 paid leaves per year."  
+↓  
+Send Question + Retrieved Context to LLM  
+↓  
+LLM Answer: "Employees receive 20 paid leaves per year."
+
+So, instead of depending only on the LLM's internal knowledge, we **ground the answer using our own data**.
+
+---
+
+# Main Reasons for Using RAG
+
+## 1. Use Private or Domain-Specific Data
+
+LLMs don't automatically know an organization's internal information.
+
+RAG allows us to connect the LLM with:
+
+- Company documents
+- Policies
+- Product documentation
+- Financial documents
+- Knowledge bases
+- PDFs
+- Databases
+
+---
+
+## 2. Reduce Hallucination
+
+An LLM can sometimes confidently generate incorrect information.
+
+RAG provides relevant documents as context.
+
+Instead of asking:
+
+User Question → LLM → Answer
+
+We do:
+
+User Question
+      ↓
+Retrieve Relevant Information
+      ↓
+Question + Context
+      ↓
+LLM
+      ↓
+Grounded Answer
+
+This **reduces hallucination**, although it does not completely eliminate it.
+
+---
+
+## 3. Use Updated Information
+
+LLM knowledge is based on its training data and may not contain the latest information.
+
+With RAG, we can update the external knowledge base without retraining the LLM.
+
+Example:
+
+New Company Policy
+      ↓
+Add Document
+      ↓
+Create Embeddings
+      ↓
+Update Vector DB
+      ↓
+RAG can retrieve the new information
+
+---
+
+## 4. No Need to Retrain the LLM
+
+Without RAG, we might think about fine-tuning or retraining the model when knowledge changes.
+
+That can be expensive and time-consuming.
+
+With RAG:
+
+> **Update the knowledge base instead of retraining the model.**
+
+---
+
+## 5. Better Domain-Specific Answers
+
+RAG is useful when the LLM needs to answer questions from a specific domain.
+
+Examples:
+
+- Banking
+- Capital Markets
+- Healthcare
+- Legal documents
+- Company policies
+- Technical documentation
+
+The retrieved context helps the LLM generate answers based on the required domain.
+
+---
+
+## 6. Source / Citation Support
+
+Because we know which documents were retrieved, we can also show the source of the answer.
+
+Example:
+
+Answer:
+"The settlement cycle is T+1."
+
+Source:
+Settlement_Guidelines.pdf, Page 12
+
+This improves **traceability and trust**.
+
+---
+
+# Why RAG Instead of Only an LLM?
+
+### Without RAG
+
+User Question
+      ↓
+LLM
+      ↓
+Answer based mainly on model knowledge
+
+Problems:
+
+- May be outdated
+- Doesn't know private data
+- Higher chance of hallucination
+
+### With RAG
+
+User Question
+      ↓
+Retrieve Relevant Documents
+      ↓
+Provide Context
+      ↓
+LLM
+      ↓
+Grounded Answer
+
+Benefits:
+
+- Private knowledge
+- Updated knowledge
+- Better factual grounding
+- Source references
+- No model retraining for every data update
+
+---
+
+# Interview Answer
+
+**"We use RAG mainly because an LLM alone may not have access to private, domain-specific, or updated information and can also hallucinate.**
+
+**In RAG, we retrieve relevant information from an external knowledge base and provide that information as context to the LLM before generating the answer.**
+
+**This helps us generate more grounded and domain-specific responses, reduce hallucination, use frequently updated data without retraining the model, and also provide source citations.**
+
+**For example, if I'm building an internal company chatbot, instead of expecting the LLM to know company policies, I can store those documents in a knowledge base and retrieve the relevant policy whenever a user asks a question."**
+
+---
+
+# One-Line Answer
+
+> **RAG is used to give an LLM access to private, domain-specific, and up-to-date information so it can generate more accurate and grounded answers without retraining the model.**
+
+---
+
+# Keywords to Remember
+
+**Private Data → Updated Data → Retrieval → Grounding → Reduce Hallucination → No Retraining → Citations**
+
