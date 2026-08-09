@@ -1,259 +1,64 @@
-# RAG Architecture
+# RAG — Interview Cheat Sheet
 
-## What is RAG?
+## 1. What is RAG?
 
-**RAG (Retrieval-Augmented Generation)** is an architecture where an LLM first retrieves relevant information from an external knowledge source and then uses that information to generate the final answer.
+**RAG stands for Retrieval-Augmented Generation.**
 
-In simple terms:
+It retrieves relevant information from an external knowledge base and gives that information as context to the LLM before generating the answer.
 
-> **RAG = Retrieval + LLM Generation**
-
-Instead of depending only on what the LLM learned during training, we provide it with relevant information from our own documents or database.
-
----
-
-## RAG Architecture
-
-RAG usually has **two main flows**:
-
-1. **Indexing / Ingestion Pipeline** – prepares and stores documents.
-2. **Retrieval / Generation Pipeline** – retrieves relevant information and generates an answer.
-
-### Overall Architecture
-
-User Documents
-      ↓
-Document Loader
-      ↓
-Text Cleaning
-      ↓
-Chunking
-      ↓
-Embedding Model
-      ↓
-Vector Database
-      ↓
-      ↓
+```text
 User Question
       ↓
-Embedding Model
+Retrieve Relevant Data
       ↓
-Similarity Search
+Give Context to LLM
       ↓
-Top-K Relevant Chunks
-      ↓
-Prompt = Question + Retrieved Context
-      ↓
-LLM
-      ↓
-Final Answer
+Generate Answer
+```
+
+**Interview Answer:**
+
+> RAG combines retrieval with LLM generation. Instead of depending only on the LLM's training knowledge, we retrieve relevant information from our documents and provide it as context to generate a more accurate and grounded answer.
 
 ---
 
-# 1. Indexing / Ingestion Pipeline
+# 2. Why Do We Use RAG?
 
-This happens before users start asking questions.
+Main reasons:
 
-## Step 1: Load Documents
+* Use private/company data
+* Use latest information
+* Reduce hallucination
+* Improve domain-specific answers
+* No need to retrain the LLM when documents change
+* Can provide source citations
 
-First, we collect data from sources such as:
+**Example:**
 
-- PDF
-- DOCX
-- Websites
-- Database
-- CSV
-- APIs
-- Internal company documents
+If an HR document says:
 
-Example:
-
-A company may upload its HR policy documents.
-
----
-
-## Step 2: Clean the Text
-
-We remove unnecessary information such as:
-
-- Extra spaces
-- HTML tags
-- Broken characters
-- Unnecessary headers/footers
-
-This improves the quality of retrieval.
-
----
-
-## Step 3: Chunking
-
-Large documents cannot be efficiently searched as one big piece.
-
-Therefore, we divide them into smaller pieces called **chunks**.
-
-Example:
-
-Document = 10,000 words
-
-We might divide it into:
-
-Chunk 1 → 500 tokens  
-Chunk 2 → 500 tokens  
-Chunk 3 → 500 tokens  
-...
-
-Usually, we also keep some **overlap** between chunks so that context is not lost.
-
-Example:
-
-Chunk size = 500 tokens  
-Overlap = 50 tokens
-
----
-
-## Step 4: Create Embeddings
-
-Each chunk is converted into a numerical vector using an **embedding model**.
-
-Example:
-
-"Employees get 20 annual leaves"
-
-might become conceptually:
-
-[0.21, -0.42, 0.73, 0.11, ...]
-
-The vector represents the **semantic meaning** of the text.
-
-Embedding models can include:
-
-- OpenAI Embeddings
-- Sentence Transformers
-- Hugging Face models
-- Azure OpenAI Embeddings
-
----
-
-## Step 5: Store in Vector Database
-
-The embeddings are stored in a **Vector Database** along with the original text and metadata.
-
-Examples:
-
-- Qdrant
-- Pinecone
-- Chroma
-- FAISS
-- Weaviate
-- Azure AI Search
-
-Conceptually:
-
-Chunk Text
-+
-Embedding
-+
-Metadata
-      ↓
-Vector Database
-
-Metadata could contain:
-
-document_name
-page_number
-category
-created_date
-
----
-
-# 2. Retrieval + Generation Pipeline
-
-This happens when the user asks a question.
-
-## Step 6: User Asks a Question
-
-Example:
-
-> "How many annual leaves do employees get?"
-
----
-
-## Step 7: Convert Question into Embedding
-
-The same or compatible embedding model converts the user's question into a vector.
-
-User Question
-      ↓
-Embedding Model
-      ↓
-Query Vector
-
----
-
-## Step 8: Similarity Search
-
-The query vector is compared with vectors stored in the Vector Database.
-
-Usually, similarity algorithms such as **Cosine Similarity** are used.
-
-The system finds chunks whose meaning is closest to the user's question.
-
----
-
-## Step 9: Retrieve Top-K Chunks
-
-Instead of retrieving the entire database, we retrieve the most relevant chunks.
-
-Example:
-
-Top-K = 3
-
-Result:
-
-Chunk 1 → "Employees receive 20 annual leaves."
-
-Chunk 2 → "Unused leaves can be carried forward."
-
-Chunk 3 → "Leave approval requires manager approval."
-
----
-
-## Step 10: Build the Prompt
-
-The retrieved chunks are added to the LLM prompt as **context**.
-
-Example:
-
-Context:
+```text
 Employees receive 20 annual leaves.
-Unused leaves can be carried forward.
+```
 
-Question:
-How many annual leaves do employees get?
+The LLM may not know this private information.
 
-Answer using only the provided context.
+RAG retrieves this policy and gives it to the LLM before answering.
 
----
+**Interview Answer:**
 
-## Step 11: LLM Generates the Answer
-
-The LLM receives:
-
-**System Instructions + Retrieved Context + User Question**
-
-and generates:
-
-> "Employees receive 20 annual leaves."
-
-The important point is that the LLM is now answering using **retrieved company data**, instead of relying only on its training knowledge.
+> I use RAG when the LLM needs access to private, domain-specific, or frequently updated information. It helps ground the answer using actual documents and reduces hallucination without retraining the model.
 
 ---
 
-# Complete RAG Flow
+# 3. RAG Architecture
 
+RAG has two major flows:
+
+### A. Indexing / Ingestion
+
+```text
 Documents
-   ↓
-Load
    ↓
 Clean
    ↓
@@ -262,12 +67,14 @@ Chunk
 Create Embeddings
    ↓
 Store in Vector DB
+```
 
-----------------------------
+### B. Retrieval / Generation
 
+```text
 User Question
    ↓
-Create Query Embedding
+Query Embedding
    ↓
 Search Vector DB
    ↓
@@ -275,1712 +82,757 @@ Retrieve Top-K Chunks
    ↓
 Optional Reranking
    ↓
-Add Chunks to Prompt
-   ↓
-LLM
-   ↓
-Final Answer
-
----
-
-# Simple Example
-
-Suppose we build a RAG chatbot for a company.
-
-The company has an HR document containing:
-
-> "Employees are entitled to 20 paid annual leaves."
-
-We chunk the document, create embeddings, and store them in a Vector DB.
-
-User asks:
-
-> "How many paid leaves do I get?"
-
-Even though the wording is different, semantic search can retrieve:
-
-> "Employees are entitled to 20 paid annual leaves."
-
-That chunk is passed to the LLM.
-
-The LLM answers:
-
-> "Employees are entitled to 20 paid annual leaves."
-
----
-
-# Why Do We Use RAG?
-
-RAG helps us:
-
-- Use **private/company-specific data**
-- Access information that was not part of LLM training
-- Work with **updated information**
-- Reduce hallucinations
-- Provide more grounded answers
-- Update knowledge without retraining the LLM
-- Provide source/citation information
-
----
-
-# Important Components of RAG
-
-| Component | Purpose |
-|---|---|
-| Document Loader | Loads PDFs, documents, APIs, etc. |
-| Chunking | Breaks large documents into smaller pieces |
-| Embedding Model | Converts text into vectors |
-| Vector Database | Stores and searches vectors |
-| Retriever | Finds relevant chunks |
-| Similarity Search | Measures relevance between query and chunks |
-| Top-K | Number of chunks retrieved |
-| Reranker | Reorders retrieved chunks based on relevance |
-| Prompt | Combines retrieved context with user question |
-| LLM | Generates the final answer |
-
----
-
-# Interview Answer
-
-**"RAG stands for Retrieval-Augmented Generation. It combines information retrieval with an LLM.**
-
-**The architecture has two main parts: indexing and retrieval-generation.**
-
-**During indexing, I load documents, clean them, divide them into chunks, generate embeddings for those chunks, and store the embeddings in a vector database such as Qdrant or Chroma.**
-
-**When a user asks a question, I generate an embedding for the query and perform similarity search against the vector database. I retrieve the Top-K most relevant chunks and optionally rerank them.**
-
-**Then I combine those retrieved chunks with the user's question and send them as context to the LLM. The LLM generates the final answer based on that retrieved information.**
-
-**The main advantage is that we can provide private or updated knowledge to the LLM without retraining the model, while also reducing hallucination."**
-
----
-
-# One-Line Interview Answer
-
-> **RAG retrieves relevant information from an external knowledge base and provides it as context to an LLM so that the LLM can generate a more accurate and grounded answer.**
-
----
-
-# Keywords to Remember
-
-**Documents → Chunking → Embeddings → Vector DB → Query Embedding → Similarity Search → Top-K → Reranking → Context → LLM → Answer**
-
-# Why Do We Use RAG?
-
-## Simple Answer
-
-We use **RAG (Retrieval-Augmented Generation)** because an LLM has some limitations:
-
-- Its training knowledge may be outdated.
-- It does not automatically know our private/company data.
-- It can hallucinate and give incorrect answers.
-- Retraining or fine-tuning the model whenever data changes is expensive.
-
-RAG solves this by **retrieving relevant information from an external knowledge source and providing it to the LLM as context before generating the answer.**
-
----
-
-## Example
-
-Suppose a company has an internal HR policy:
-
-> "Employees receive 20 paid leaves per year."
-
-The LLM may not know this because this information is private.
-
-With RAG:
-
-User Question  
-↓  
-"How many paid leaves do employees get?"  
-↓  
-Search Company Knowledge Base  
-↓  
-Retrieve: "Employees receive 20 paid leaves per year."  
-↓  
-Send Question + Retrieved Context to LLM  
-↓  
-LLM Answer: "Employees receive 20 paid leaves per year."
-
-So, instead of depending only on the LLM's internal knowledge, we **ground the answer using our own data**.
-
----
-
-# Main Reasons for Using RAG
-
-## 1. Use Private or Domain-Specific Data
-
-LLMs don't automatically know an organization's internal information.
-
-RAG allows us to connect the LLM with:
-
-- Company documents
-- Policies
-- Product documentation
-- Financial documents
-- Knowledge bases
-- PDFs
-- Databases
-
----
-
-## 2. Reduce Hallucination
-
-An LLM can sometimes confidently generate incorrect information.
-
-RAG provides relevant documents as context.
-
-Instead of asking:
-
-User Question → LLM → Answer
-
-We do:
-
-User Question
-      ↓
-Retrieve Relevant Information
-      ↓
 Question + Context
-      ↓
-LLM
-      ↓
-Grounded Answer
-
-This **reduces hallucination**, although it does not completely eliminate it.
-
----
-
-## 3. Use Updated Information
-
-LLM knowledge is based on its training data and may not contain the latest information.
-
-With RAG, we can update the external knowledge base without retraining the LLM.
-
-Example:
-
-New Company Policy
-      ↓
-Add Document
-      ↓
-Create Embeddings
-      ↓
-Update Vector DB
-      ↓
-RAG can retrieve the new information
-
----
-
-## 4. No Need to Retrain the LLM
-
-Without RAG, we might think about fine-tuning or retraining the model when knowledge changes.
-
-That can be expensive and time-consuming.
-
-With RAG:
-
-> **Update the knowledge base instead of retraining the model.**
-
----
-
-## 5. Better Domain-Specific Answers
-
-RAG is useful when the LLM needs to answer questions from a specific domain.
-
-Examples:
-
-- Banking
-- Capital Markets
-- Healthcare
-- Legal documents
-- Company policies
-- Technical documentation
-
-The retrieved context helps the LLM generate answers based on the required domain.
-
----
-
-## 6. Source / Citation Support
-
-Because we know which documents were retrieved, we can also show the source of the answer.
-
-Example:
-
-Answer:
-"The settlement cycle is T+1."
-
-Source:
-Settlement_Guidelines.pdf, Page 12
-
-This improves **traceability and trust**.
-
----
-
-# Why RAG Instead of Only an LLM?
-
-### Without RAG
-
-User Question
-      ↓
-LLM
-      ↓
-Answer based mainly on model knowledge
-
-Problems:
-
-- May be outdated
-- Doesn't know private data
-- Higher chance of hallucination
-
-### With RAG
-
-User Question
-      ↓
-Retrieve Relevant Documents
-      ↓
-Provide Context
-      ↓
-LLM
-      ↓
-Grounded Answer
-
-Benefits:
-
-- Private knowledge
-- Updated knowledge
-- Better factual grounding
-- Source references
-- No model retraining for every data update
-
----
-
-# Interview Answer
-
-**"We use RAG mainly because an LLM alone may not have access to private, domain-specific, or updated information and can also hallucinate.**
-
-**In RAG, we retrieve relevant information from an external knowledge base and provide that information as context to the LLM before generating the answer.**
-
-**This helps us generate more grounded and domain-specific responses, reduce hallucination, use frequently updated data without retraining the model, and also provide source citations.**
-
-**For example, if I'm building an internal company chatbot, instead of expecting the LLM to know company policies, I can store those documents in a knowledge base and retrieve the relevant policy whenever a user asks a question."**
-
----
-
-# One-Line Answer
-
-> **RAG is used to give an LLM access to private, domain-specific, and up-to-date information so it can generate more accurate and grounded answers without retraining the model.**
-
----
-
-# Keywords to Remember
-
-**Private Data → Updated Data → Retrieval → Grounding → Reduce Hallucination → No Retraining → Citations**
-
-# Embeddings in RAG
-
-## What are Embeddings?
-
-**Embeddings are numerical representations of text that capture its semantic meaning.**
-
-In simple words:
-
-> **Embedding converts text into a vector (list of numbers) so that a computer can compare the meaning of different texts.**
-
-Example:
-
-"How can I reset my password?"
-
-↓ Embedding Model ↓
-
-[0.21, -0.45, 0.78, 0.12, ...]
-
-The actual embedding can contain hundreds or thousands of numbers.
-
----
-
-# Why Do We Need Embeddings in RAG?
-
-Computers cannot directly understand the semantic meaning of sentences.
-
-For example:
-
-> "How many paid leaves do employees get?"
-
-and
-
-> "What is the annual vacation allowance?"
-
-These sentences use different words but have a **similar meaning**.
-
-Embeddings place semantically similar text closer together in vector space.
-
-This allows RAG to retrieve relevant information even when the user's exact words are not present in the document.
-
----
-
-# Where Are Embeddings Used in RAG?
-
-There are two important places.
-
-## 1. Document Embeddings
-
-First, documents are divided into chunks.
-
-Each chunk is converted into an embedding.
-
-Document
-   ↓
-Chunking
-   ↓
-Chunk 1 → Embedding → [0.2, 0.5, ...]
-Chunk 2 → Embedding → [0.7, 0.1, ...]
-Chunk 3 → Embedding → [0.3, 0.8, ...]
-   ↓
-Vector Database
-
-The vector database stores:
-
-- Original chunk
-- Embedding/vector
-- Metadata
-
----
-
-## 2. Query Embedding
-
-When the user asks a question, we convert the question into an embedding using the same or a compatible embedding model.
-
-User Question
-      ↓
-Embedding Model
-      ↓
-Query Vector
-      ↓
-Compare with stored vectors
-      ↓
-Retrieve similar chunks
-
----
-
-# Simple Example
-
-Suppose our Vector DB contains:
-
-Chunk 1:
-
-> "Employees receive 20 annual paid leaves."
-
-Chunk 2:
-
-> "The company provides health insurance."
-
-Chunk 3:
-
-> "Employees receive laptops during onboarding."
-
-User asks:
-
-> "How many vacation days do I get?"
-
-The words **vacation days** and **annual paid leaves** are different.
-
-But their embeddings should be semantically similar.
-
-Therefore:
-
-User Query
-      ↓
-Query Embedding
-      ↓
-Similarity Search
-      ↓
-Chunk 1 has highest similarity
-      ↓
-Retrieve Chunk 1
-      ↓
-Send it to LLM
-
----
-
-# How Are Embeddings Compared?
-
-A common method is **Cosine Similarity**.
-
-It measures how similar two vectors are based on their direction.
-
-Conceptually:
-
-Query Embedding
-      ↓
-Compare with
-      ↓
-Chunk Embeddings
-      ↓
-Similarity Scores
-
-Example:
-
-Chunk 1 → 0.92  
-Chunk 2 → 0.41  
-Chunk 3 → 0.25
-
-Chunk 1 has the highest similarity, so it is retrieved.
-
----
-
-# Embedding Model vs LLM
-
-This is an important interview distinction.
-
-### Embedding Model
-
-Converts:
-
-Text → Vector
-
-Used mainly for:
-
-- Semantic search
-- Retrieval
-- Similarity comparison
-
-### LLM
-
-Converts:
-
-Prompt + Context → Natural Language Answer
-
-Used mainly for:
-
-- Understanding context
-- Reasoning
-- Generating responses
-
-So in RAG:
-
-Documents
-   ↓
-Embedding Model
-   ↓
-Vector DB
-
-User Query
-   ↓
-Embedding Model
-   ↓
-Retrieval
-   ↓
-Relevant Context
    ↓
 LLM
    ↓
 Answer
+```
+
+**Interview Answer:**
+
+> First, I load and clean the documents, split them into chunks, create embeddings and store them in a vector database. When the user asks a question, I create its embedding, retrieve the Top-K similar chunks, optionally rerank them, and send the relevant context with the question to the LLM.
 
 ---
 
-# Example Embedding Models
+# 4. What are Embeddings?
 
-Common embedding models include:
+Embeddings are **numerical vector representations of text that capture semantic meaning**.
 
-- OpenAI Embeddings
-- Azure OpenAI Embeddings
-- Hugging Face Sentence Transformers
-- `all-MiniLM-L6-v2`
-- Google embedding models
+```text
+"How many leaves do I get?"
+        ↓
+Embedding Model
+        ↓
+[0.21, -0.45, 0.78, ...]
+```
 
-For example, `all-MiniLM-L6-v2` produces **384-dimensional embeddings**.
+They allow us to compare text based on **meaning**, not only exact words.
 
-That means every text chunk is represented using a vector containing 384 numbers.
+Example:
+
+```text
+"annual leave"
+"vacation days"
+```
+
+Different words, but similar meaning → embeddings should be close.
+
+**Interview Answer:**
+
+> Embeddings convert text into numerical vectors representing semantic meaning. In RAG, I create embeddings for document chunks and the user query, then compare them to find relevant chunks.
 
 ---
 
-# Important Interview Point
+# 5. What is a Vector Database?
 
-We generally use the **same embedding model for documents and user queries**.
+A Vector DB stores embeddings and performs fast similarity search.
+
+Examples:
+
+* Qdrant
+* Pinecone
+* Chroma
+* Weaviate
+* FAISS
+* Azure AI Search
+
+Usually we store:
+
+```text
+Embedding
++
+Original Chunk
++
+Metadata
+```
+
+Example metadata:
+
+```text
+document_name
+page_number
+category
+date
+```
+
+**Interview Answer:**
+
+> A vector database stores document embeddings and allows us to quickly retrieve vectors that are most similar to the user's query embedding.
+
+---
+
+# 6. What is Chunking?
+
+Chunking means dividing large documents into smaller pieces before creating embeddings.
+
+```text
+Large PDF
+   ↓
+Chunk 1
+Chunk 2
+Chunk 3
+Chunk 4
+   ↓
+Embeddings
+```
+
+### Why chunk?
+
+* Better retrieval
+* More focused embeddings
+* Less unnecessary context
+* Lower token usage
+* Fits LLM context window
+
+---
+
+# 7. Chunk Size and Overlap
+
+### Chunk Size
+
+Amount of text inside one chunk.
+
+Example:
+
+```text
+Chunk Size = 500 tokens
+```
+
+### Chunk Overlap
+
+Some text from the previous chunk is repeated in the next chunk.
+
+Example:
+
+```text
+Chunk Size = 500
+Overlap = 50
+```
+
+Why overlap?
+
+It prevents context from being lost when important information lies between two chunks.
+
+**Interview Answer:**
+
+> Chunk size controls how much text each chunk contains, while overlap keeps some shared text between consecutive chunks so context is not lost at chunk boundaries.
+
+There is **no universal best chunk size**. It should be tested based on document type and retrieval quality.
+
+---
+
+# 8. Types of Chunking
+
+## Fixed-Size Chunking
+
+Split after a fixed number of tokens or characters.
+
+```text
+500 tokens
+500 tokens
+500 tokens
+```
+
+**Pros:** Simple and fast.
+
+**Cons:** Can split sentences or topics incorrectly.
+
+---
+
+## Recursive Chunking
+
+Tries to split using natural separators such as:
+
+```text
+Paragraph
+↓
+Sentence
+↓
+Word
+```
+
+It preserves document structure better than simple fixed splitting.
+
+**Interview Answer:**
+
+> Recursive chunking tries larger natural boundaries like paragraphs first and moves to smaller separators if required.
+
+---
+
+## Semantic Chunking
+
+Splits text when the **meaning/topic changes**.
+
+Example:
+
+```text
+Leave Policy
+-----------
+one chunk
+
+Salary Policy
+-----------
+another chunk
+```
+
+**Pros:** Better semantic grouping.
+
+**Cons:** More expensive and complex.
+
+---
+
+# 9. Dense Retrieval
+
+Dense retrieval uses **embeddings**.
+
+```text
+Query
+ ↓
+Embedding
+ ↓
+Vector Similarity Search
+ ↓
+Relevant Chunks
+```
+
+It searches based on **meaning**.
+
+Example:
+
+```text
+Query: "Why did my trade fail?"
+
+Document:
+"Settlement was unsuccessful due to insufficient securities."
+```
+
+Dense retrieval can understand their semantic similarity.
+
+**Remember:**
+
+> Dense = Embeddings + Meaning
+
+---
+
+# 10. Sparse Retrieval / BM25
+
+Sparse retrieval is mainly **keyword-based retrieval**.
+
+BM25 is a commonly used sparse retrieval algorithm.
+
+Useful for exact terms such as:
+
+```text
+MT548
+Trade ID
+Error Code
+Employee ID
+Product Name
+```
+
+**Interview Answer:**
+
+> BM25 is a keyword-based retrieval algorithm. It is useful when exact words, IDs, codes, or technical terms are important.
+
+**Remember:**
+
+> Sparse/BM25 = Keywords
+
+---
+
+# 11. Semantic Search
+
+Semantic search means searching based on **meaning instead of exact keyword matching**.
+
+Usually:
+
+```text
+Embeddings
++
+Vector DB
++
+Similarity Search
+```
+
+Example:
+
+```text
+Document:
+"Employees receive 20 annual paid leaves."
+
+Query:
+"How many vacation days do I get?"
+```
+
+Semantic search understands:
+
+```text
+vacation days ≈ annual paid leaves
+```
+
+**Interview Answer:**
+
+> Semantic search retrieves documents based on meaning using embeddings rather than depending only on exact keyword matches.
+
+---
+
+# 12. Hybrid Search
+
+Hybrid Search combines:
+
+```text
+Dense Retrieval + BM25
+```
+
+Meaning:
+
+```text
+Semantic Search + Keyword Search
+```
+
+Example query:
+
+```text
+Why did MT548 settlement fail?
+```
+
+Dense retrieval understands:
+
+```text
+settlement failure
+```
+
+BM25 strongly matches:
+
+```text
+MT548
+```
+
+So hybrid search gives us benefits of both.
+
+```text
+             Query
+            /     \
+           ↓       ↓
+       Dense      BM25
+           \       /
+            ↓     ↓
+         Combine Results
+               ↓
+           Reranking
+               ↓
+              LLM
+```
+
+**Interview Answer:**
+
+> Hybrid search combines dense embedding-based retrieval with sparse keyword retrieval like BM25. Dense search understands meaning, while BM25 handles exact keywords and technical terms.
+
+---
+
+# 13. Cosine Similarity
+
+Cosine similarity measures how similar two vectors are based on their direction.
+
+In RAG:
+
+```text
+Query Embedding
+      ↓
+Compare With
+      ↓
+Document Embeddings
+```
+
+Example:
+
+```text
+Chunk A → 0.94
+Chunk B → 0.81
+Chunk C → 0.30
+```
+
+Chunk A is more similar to the query.
+
+**Interview Answer:**
+
+> Cosine similarity is used to measure similarity between the query embedding and document embeddings so we can retrieve semantically relevant chunks.
+
+You usually don't need to memorize the formula for an interview.
+
+---
+
+# 14. What is Top-K?
+
+Top-K means the **number of highest-ranked chunks retrieved**.
+
+Example:
+
+```text
+Top-K = 3
+```
+
+means retrieve the 3 most relevant chunks.
+
+### K too small
+
+May miss important information.
+
+### K too large
+
+May:
+
+* Add irrelevant information
+* Increase tokens
+* Increase cost
+* Confuse the LLM
+
+**Interview Answer:**
+
+> Top-K controls how many relevant chunks we retrieve. A very small K may miss context, while a very large K can introduce noise, so I tune it based on retrieval performance.
+
+---
+
+# 15. What is Reranking?
+
+Reranking means taking initially retrieved results and ranking them again using a more accurate relevance model.
+
+Example:
+
+```text
+Retrieve Top 20
+      ↓
+Reranker
+      ↓
+Best 5
+      ↓
+LLM
+```
 
 Why?
 
-Because both vectors need to exist in the **same vector space** for meaningful similarity comparison.
+Vector search is fast, but the initial ranking may not always be perfect.
 
-If you change the embedding model, you will normally need to **re-embed your stored documents**.
+**Interview Answer:**
+
+> Reranking is a second retrieval stage. I first retrieve a larger number of candidate chunks and then use a reranker to reorder them based on relevance before sending the best chunks to the LLM.
 
 ---
 
-# Embeddings vs Keywords
+# 16. What is Hallucination?
 
-Traditional keyword search mainly looks for matching words.
+Hallucination is when an LLM generates information that sounds correct but is **incorrect or unsupported**.
 
 Example:
 
 Document:
 
-> "Employees receive 20 annual leaves."
+```text
+Employees receive 20 leaves.
+```
 
-Query:
-
-> "What is my vacation allowance?"
-
-There may be no exact keyword match.
-
-Embedding-based search understands that:
-
-**vacation allowance ≈ annual leaves**
-
-That is why embeddings are useful for **semantic search**.
-
----
-
-# Interview Answer
-
-**"Embeddings are numerical vector representations of text that capture semantic meaning.**
-
-**In RAG, after splitting documents into chunks, I pass each chunk through an embedding model and store the generated vectors in a vector database.**
-
-**When the user asks a question, I also convert the query into an embedding. Then I compare the query vector with the stored document vectors using similarity search, commonly cosine similarity, and retrieve the Top-K most relevant chunks.**
-
-**The retrieved chunks are then provided as context to the LLM for generating the final answer.**
-
-**The main advantage of embeddings is that they allow semantic search, so the query and document don't need to contain exactly the same words as long as their meanings are similar."**
-
----
-
-# One-Line Answer
-
-> **Embeddings convert text into numerical vectors that represent semantic meaning, allowing a RAG system to find relevant document chunks using vector similarity search.**
-
----
-
-# Keywords to Remember
-
-**Text → Embedding Model → Vector → Vector DB → Query Vector → Cosine Similarity → Top-K → Relevant Chunks → LLM**
-
-# Vector Database in RAG
-
-## What is a Vector Database?
-
-A **Vector Database** is a database designed to store, index, and search **high-dimensional vectors (embeddings)** efficiently.
-
-In RAG, document chunks are converted into embeddings and stored in a Vector DB.
-
-Simple definition:
-
-> **Vector DB stores embeddings and helps us quickly find the most semantically similar chunks for a user's query.**
-
----
-
-# Why Do We Need a Vector DB?
-
-Suppose we have **1 million document chunks**.
-
-When a user asks a question, comparing the query embedding manually with all 1 million embeddings would be inefficient.
-
-A Vector DB provides optimized indexing and similarity search to quickly find the most relevant vectors.
-
-So:
-
-User Question
-      ↓
-Query Embedding
-      ↓
-Vector Database
-      ↓
-Similarity Search
-      ↓
-Top-K Relevant Chunks
-      ↓
-LLM
-      ↓
-Answer
-
----
-
-# What Do We Store in a Vector DB?
-
-Usually, we store three things:
-
-### 1. Embedding
-
-Numerical representation of the chunk.
+LLM:
 
 ```text
-[0.21, -0.45, 0.78, 0.12, ...]
+Employees receive 30 leaves.
+```
 
-# Chunking in RAG — Why, Size, and Overlap
+That is hallucination.
 
-## What is Chunking?
-
-**Chunking means dividing a large document into smaller pieces of text before creating embeddings and storing them in the Vector DB.**
-
-Example:
-
-A PDF has 50 pages.
-
-Instead of creating one embedding for the entire PDF:
-
-Document
-↓
-Split into smaller chunks
-↓
-Create embedding for each chunk
-↓
-Store chunks in Vector DB
-
-Example:
-
-Chunk 1 → Introduction  
-Chunk 2 → Leave Policy  
-Chunk 3 → Work From Home Policy  
-Chunk 4 → Insurance Policy
-
----
-
-# Why Do We Need Chunking?
-
-## 1. Better Retrieval Accuracy
-
-Suppose a 50-page HR document contains information about:
-
-- Salary
-- Leave
-- Insurance
-- Work From Home
-- Appraisal
-
-If we create one embedding for the entire document, it represents too many topics.
-
-Instead, if we create smaller chunks:
-
-User asks:
-
-> "How many annual leaves do employees get?"
-
-The system can retrieve only the chunk containing the **leave policy**.
-
-So:
-
-Large Document → Less precise retrieval
-
-Smaller Relevant Chunks → Better retrieval
-
----
-
-## 2. LLM Context Window
-
-LLMs have a limited context window.
-
-We cannot keep sending complete documents to the LLM for every question.
-
-Instead:
-
-User Question
-↓
-Retrieve Top-K Relevant Chunks
-↓
-Send only those chunks to LLM
-
-This saves tokens and reduces cost.
-
----
-
-## 3. Better Embeddings
-
-Embeddings work better when the text represents a relatively focused meaning.
-
-For example:
-
-### Large Chunk
-
-Contains:
-
-Leave Policy + Salary + Insurance + Appraisal + Remote Work
-
-The embedding represents many concepts.
-
-### Smaller Chunk
-
-Contains:
-
-> "Employees receive 20 annual paid leaves."
-
-The embedding has a much more focused meaning.
-
-This generally improves semantic retrieval.
-
----
-
-# What is Chunk Size?
-
-**Chunk size is the amount of text we put into one chunk.**
-
-It is commonly measured using:
-
-- Tokens
-- Characters
-- Words
-
-For LLM applications, **tokens are usually the better measurement**.
-
-Example:
-
-```text
-Chunk Size = 500 tokens
-
-# Chunking Types: Fixed, Recursive, Semantic + Dense Retrieval
-
-# 1. Fixed-Size Chunking
-
-**Fixed-size chunking** divides text into chunks of approximately the same size, based on characters, words, or tokens.
-
-Example:
-
-```text
-Document = 5000 tokens
-
-Chunk Size = 500 tokens
-Overlap = 50 tokens
-
-Chunk 1 → Token 1–500
-Chunk 2 → Token 451–950
-Chunk 3 → Token 901–1400
-...
-
-# Sparse Retrieval / BM25 in RAG
-
-> **Note:** It is **BM25**, not BM2.
-
-# What is Sparse Retrieval?
-
-**Sparse retrieval is a keyword-based retrieval technique that finds documents based mainly on the words present in the user query and documents.**
-
-Unlike dense retrieval, it does **not depend on semantic embeddings** for matching.
-
-Simple way to remember:
-
-> **Dense Retrieval = Meaning / Embeddings**
->
-> **Sparse Retrieval = Keywords / Terms**
-
----
-
-# Simple Example
-
-Suppose our documents contain:
-
-```text
-Document 1:
-"SWIFT MT548 is used for settlement status."
-
-Document 2:
-"Employees receive 20 annual leaves."
-
-Document 3:
-"MT103 is used for customer credit transfer."
-
-# Semantic Search in RAG
-
-## What is Semantic Search?
-
-**Semantic search retrieves information based on the meaning of the user's query rather than only matching exact keywords.**
-
-In RAG, semantic search is commonly implemented using:
-
-**Embeddings + Vector Database + Similarity Search**
-
-Simple definition:
-
-> **Semantic Search = Search by meaning, not just exact words.**
-
----
-
-# Simple Example
-
-Suppose the document contains:
-
-> "Employees receive 20 annual paid leaves."
-
-User asks:
-
-> "How many vacation days do I get?"
-
-There is no exact match between:
-
-```text
-vacation days
-
-# RAG Interview Notes — Hybrid Search, Cosine Similarity, Top-K, Reranking, Hallucination, RAG vs Fine-Tuning, Improving RAG
-
----
-
-# 1. Hybrid Search
-
-## What is Hybrid Search?
-
-**Hybrid Search combines Dense Retrieval and Sparse Retrieval (BM25).**
-
-In simple terms:
-
-> **Hybrid Search = Semantic Search + Keyword Search**
-
-### Dense Retrieval
-Dense retrieval uses **embeddings** to search based on semantic meaning.
-
-Example:
-
-User asks:
-
-"Why did my trade fail?"
-
-Document says:
-
-"Settlement was unsuccessful due to insufficient securities."
-
-Even though the exact words are different, dense retrieval can understand that they have similar meanings.
-
-### Sparse Retrieval / BM25
-BM25 searches mainly using **keywords and exact terms**.
-
-It is useful for:
-
-- Error codes
-- SWIFT message types
-- Product IDs
-- Employee IDs
-- Names
-- Technical terms
-
-Example:
-
-User searches:
-
-"MT548 settlement failure"
-
-BM25 can strongly match documents containing the exact keyword `MT548`.
-
-### Hybrid Search Flow
-
-User Query
-     ↓
-     ├───────────────┐
-     ↓               ↓
-Dense Search      BM25 Search
-     ↓               ↓
-Semantic          Keyword
-Results           Results
-     ↓               ↓
-     └───────┬───────┘
-             ↓
-       Combine Results
-             ↓
-          Reranking
-             ↓
-       Top-K Chunks
-             ↓
-            LLM
-
-### Interview Answer
-
-**"Hybrid search combines dense embedding-based retrieval with sparse keyword-based retrieval such as BM25. Dense retrieval is good for semantic meaning, while BM25 is good for exact keywords, IDs, codes, and technical terms. Combining both generally gives better retrieval coverage."**
-
----
-
-# 2. Cosine Similarity
-
-## What is Cosine Similarity?
-
-**Cosine Similarity measures how similar two vectors are based on the angle between them.**
-
-In RAG, we can use it to compare:
-
-User Query Embedding
-
-with
-
-Document Chunk Embeddings
-
-Example:
-
-Query vs Chunk A → 0.95  
-Query vs Chunk B → 0.82  
-Query vs Chunk C → 0.35  
-
-Chunk A is the most similar.
-
-### Formula
-
-Cosine Similarity:
-
-cos(A, B) = (A · B) / (||A|| × ||B||)
-
-For interviews, understanding the concept is more important than memorizing the formula.
-
-### RAG Flow
-
-User Question
-     ↓
-Embedding Model
-     ↓
-Query Vector
-     ↓
-Compare with Document Vectors
-     ↓
-Cosine Similarity
-     ↓
-Most Similar Chunks
-
-### Interview Answer
-
-**"Cosine similarity measures similarity between two vectors based on their direction. In RAG, I can use it to compare the user's query embedding with document embeddings and retrieve the most semantically similar chunks."**
-
-### One-Line Answer
-
-> **Cosine similarity helps us measure how semantically similar the query embedding is to document embeddings.**
-
----
-
-# 3. Top-K
-
-## What is Top-K?
-
-**Top-K is the number of highest-ranked chunks we retrieve for a user query.**
-
-Example:
-
-Chunk A → 0.95  
-Chunk B → 0.91  
-Chunk C → 0.86  
-Chunk D → 0.65  
-Chunk E → 0.40  
-
-If:
-
-Top-K = 3
-
-We retrieve:
-
-Chunk A  
-Chunk B  
-Chunk C
-
-These chunks are then provided to the LLM.
-
-## What if Top-K is Too Small?
-
-Example:
-
-Top-K = 1
-
-We may miss important context that exists in another chunk.
-
-## What if Top-K is Too Large?
-
-Example:
-
-Top-K = 20
-
-We may retrieve too much irrelevant information.
-
-This can:
-
-- Add noise
-- Increase token usage
-- Increase cost
-- Reduce answer quality
-
-Therefore, Top-K should be **tested and tuned**.
-
-### Interview Answer
-
-**"Top-K defines how many of the highest-ranked chunks we retrieve. If K is too small, we may miss important context. If K is too large, we may introduce irrelevant information and increase token usage. Therefore, I tune Top-K based on retrieval performance."**
-
-### One-Line Answer
-
-> **Top-K is the number of most relevant chunks retrieved from the knowledge base.**
-
----
-
-# 4. Reranking
-
-## What is Reranking?
-
-**Reranking is a second-stage retrieval process where retrieved chunks are ranked again using a more accurate relevance model.**
-
-For example:
-
-First retrieve:
-
-Top 20 chunks
-
-Then:
-
-Top 20
-   ↓
-Reranker
-   ↓
-Best 5
-   ↓
-LLM
-
-## Why Do We Need Reranking?
-
-Vector search is good at quickly finding possible candidates, but the initial ranking may not always be perfect.
-
-A reranker performs a more detailed comparison between the query and retrieved chunks.
-
-Example:
-
-Initial Retrieval:
-
-1. Chunk A
-2. Chunk B
-3. Chunk C
-4. Chunk D
-5. Chunk E
-
-After Reranking:
-
-1. Chunk C
-2. Chunk A
-3. Chunk E
-4. Chunk B
-5. Chunk D
-
-Then we can send only:
-
-Chunk C  
-Chunk A  
-Chunk E
-
-to the LLM.
-
-## Typical Reranking Flow
-
-User Query
-    ↓
-Retrieve Top-20
-    ↓
-Reranker
-    ↓
-Select Best 5
-    ↓
-LLM
-
-### Interview Answer
-
-**"Reranking is a second-stage retrieval technique. First, I retrieve a larger set of candidate chunks using dense, sparse, or hybrid retrieval. Then a reranking model compares those chunks more accurately with the query and reorders them based on relevance. Finally, I send only the best chunks to the LLM."**
-
-### One-Line Answer
-
-> **Reranking improves retrieval by reordering initially retrieved chunks based on their actual relevance to the query.**
-
----
-
-# 5. Hallucination
-
-## What is Hallucination?
-
-**Hallucination happens when an LLM generates information that sounds correct but is actually incorrect or unsupported by the available context.**
-
-Example:
-
-Actual document:
-
-"Employees receive 20 annual leaves."
-
-LLM answers:
-
-"Employees receive 30 annual leaves."
-
-This is hallucination.
-
-## Does RAG Remove Hallucination?
+### Does RAG completely remove hallucination?
 
 **No.**
 
-RAG helps **reduce hallucination**, but it does not completely eliminate it.
+RAG reduces hallucination but cannot completely eliminate it.
 
-There are mainly two possible problems:
+Two problems can happen:
 
-### Retrieval Problem
+```text
+Wrong Retrieval
+     ↓
+Wrong Context
+     ↓
+Wrong Answer
+```
 
-Wrong chunks retrieved
-       ↓
-Wrong context
-       ↓
-Wrong answer
+or:
 
-### Generation Problem
+```text
+Correct Context
+     ↓
+LLM ignores/misunderstands it
+     ↓
+Wrong Answer
+```
 
-Correct chunks retrieved
-       ↓
-LLM ignores or misunderstands context
-       ↓
-Wrong answer
+### How to reduce it?
 
-## How Can We Reduce Hallucination?
+* Better retrieval
+* Better chunking
+* Hybrid search
+* Reranking
+* Correct Top-K
+* Strong grounding prompt
+* Citations
+* Allow "I don't know"
 
-We can:
+**Interview Answer:**
 
-- Improve retrieval quality
-- Improve chunking
-- Use hybrid search
-- Add reranking
-- Tune Top-K
-- Use metadata filtering
-- Improve prompts
-- Add citations
-- Allow the model to say "I don't know"
-
-Example prompt:
-
-"Answer only using the provided context.
-
-If the answer is not available in the context, say that there is insufficient information.
-
-Do not invent information."
-
-### Interview Answer
-
-**"Hallucination is when an LLM generates incorrect or unsupported information. RAG reduces hallucination by grounding the LLM using retrieved documents, but it doesn't completely eliminate it. I can further reduce hallucination using better retrieval, reranking, strong grounding prompts, citations, and allowing the model to say it doesn't know when context is insufficient."**
-
-### One-Line Answer
-
-> **Hallucination is when an LLM confidently generates information that is incorrect or unsupported by the provided context.**
+> Hallucination is when the LLM generates incorrect or unsupported information. RAG reduces it by grounding the LLM with retrieved documents, but we still need good retrieval, reranking and grounding prompts.
 
 ---
 
-# 6. RAG vs Fine-Tuning
+# 17. RAG vs Fine-Tuning
 
-## RAG
+### RAG
 
-RAG provides **external knowledge to the LLM at runtime**.
+Provides external information at runtime.
 
+```text
+Documents → Retrieve → Context → LLM
+```
+
+The model weights are **not changed**.
+
+Best for:
+
+* Private knowledge
+* Frequently changing data
+* Company documents
+* Latest information
+* Citations
+
+### Fine-Tuning
+
+Trains the model further on examples and **changes its weights**.
+
+Best for:
+
+* Specific behavior
+* Specific style
+* Output format
+* Specialized repeated tasks
+
+### Easy Difference
+
+> **RAG changes/provides the context.**
+
+> **Fine-tuning changes the model weights.**
+
+Example:
+
+Latest HR policies → **RAG**
+
+Make the model always respond in a specific company style → **Fine-tuning**
+
+They can also be used together.
+
+---
+
+# 18. How Would You Improve RAG?
+
+This is an important interview question.
+
+First identify:
+
+```text
+Is it a Retrieval Problem?
+        OR
+Is it a Generation Problem?
+```
+
+Then improve:
+
+### Retrieval
+
+* Clean documents
+* Remove duplicates
+* Improve chunk size
+* Tune overlap
+* Better embedding model
+* Tune Top-K
+* Metadata filtering
+* Hybrid search
+* Reranking
+* Query rewriting
+
+### Generation
+
+* Better prompts
+* Strong grounding instructions
+* Tell LLM not to invent answers
+* Allow "I don't know"
+* Add citations
+
+### Evaluation
+
+Test separately:
+
+```text
+Did I retrieve the correct chunk?
+```
+
+and
+
+```text
+Did the LLM answer correctly using that chunk?
+```
+
+**Interview Answer:**
+
+> To improve RAG, I first check whether the problem is retrieval or generation. For retrieval, I optimize chunking, embeddings, Top-K, metadata filtering, hybrid search and reranking. For generation, I improve grounding prompts and citations. Finally, I evaluate retrieval and generation separately.
+
+---
+
+# 19. Complete Improved RAG Flow
+
+```text
 Documents
-    ↓
-Chunking
-    ↓
+   ↓
+Clean
+   ↓
+Chunk
+   ↓
 Embeddings
-    ↓
-Retrieval
-    ↓
-Relevant Context
-    ↓
-LLM
-    ↓
-Answer
-
-The LLM's model weights are not changed.
-
-RAG is useful for:
-
-- Private company data
-- Frequently changing information
-- Latest documents
-- Large knowledge bases
-- Source citations
-- Internal documentation
-
----
-
-## Fine-Tuning
-
-Fine-tuning means training an existing model further using specialized examples.
-
-Training Data
-     ↓
-Fine-Tuning
-     ↓
-Model Weights Updated
-     ↓
-Customized Model
-
-Fine-tuning is useful for:
-
-- Specific response style
-- Specific output format
-- Specialized behavior
-- Domain-specific tasks
-- Repeated task patterns
-
----
-
-## Simple Example
-
-Suppose I am building an HR chatbot.
-
-### Requirement:
-
-The chatbot needs access to the latest company HR policies.
-
-Use:
-
-**RAG**
-
-because policies can change frequently.
-
-### Requirement:
-
-The chatbot should always answer in a specific company-approved style and format.
-
-Fine-tuning may be useful.
-
----
-
-## Main Difference
-
-RAG:
-
-> Changes the **context/information given to the model**.
-
-Fine-Tuning:
-
-> Changes the **model itself by updating its weights**.
-
----
-
-## RAG vs Fine-Tuning Comparison
-
-| RAG | Fine-Tuning |
-|---|---|
-| Provides external knowledge | Changes model weights |
-| Good for changing information | Good for specialized behavior |
-| Documents can easily be updated | Usually requires retraining for changes |
-| Supports citations | Does not naturally provide citations |
-| Good for private knowledge | Good for style/task adaptation |
-| Retrieval happens at runtime | Knowledge/behavior is learned during training |
-
-## Can We Use Both?
-
-Yes.
-
-Fine-Tuned LLM
-      +
-RAG
-      ↓
-Application
-
-For example:
-
-RAG → provides company knowledge
-
-Fine-Tuning → controls model behavior/style
-
-### Interview Answer
-
-**"RAG and fine-tuning solve different problems. RAG retrieves external information and provides it to the LLM as context, so it is useful for private or frequently changing knowledge. Fine-tuning modifies the model weights and is more useful for adapting model behavior, style, output format, or specialized tasks. We can also use both together."**
-
-### One-Line Answer
-
-> **RAG changes the context given to the model, while fine-tuning changes the model weights.**
-
----
-
-# 7. How to Improve a RAG System?
-
-This is a very important interview question.
-
-First, I would identify whether the problem is:
-
-**Retrieval**
-
-or
-
-**Generation**
-
-I would not immediately change the LLM.
-
----
-
-## 1. Improve Document Quality
-
-Clean the source documents.
-
-Remove:
-
-- Duplicate content
-- Broken text
-- HTML noise
-- Unnecessary headers/footers
-- Outdated documents
-
-Bad Data
    ↓
-Bad Retrieval
-   ↓
-Bad Answer
-
----
-
-## 2. Improve Chunking
-
-Experiment with:
-
-- Chunk size
-- Chunk overlap
-- Recursive chunking
-- Semantic chunking
-- Document-aware chunking
-
-Example:
-
-500 tokens + 50 overlap
-
-vs
-
-800 tokens + 100 overlap
-
-Then evaluate which performs better.
-
----
-
-## 3. Improve Embedding Model
-
-Use an embedding model suitable for:
-
-- Domain
-- Language
-- Document type
-
-Better embeddings can improve semantic retrieval.
-
----
-
-## 4. Tune Top-K
-
-Experiment with:
-
-Top-K = 3  
-Top-K = 5  
-Top-K = 10  
-
-Too small:
-
-May miss important context.
-
-Too large:
-
-May introduce irrelevant context.
-
----
-
-## 5. Use Hybrid Search
-
-Combine:
-
-Dense Retrieval
-+
-BM25
-
-This gives:
-
-Semantic Search
-+
-Keyword Search
-
-Useful when queries contain both natural language and exact identifiers.
-
-Example:
-
-"Why did MT548 settlement fail?"
-
-Dense search understands:
-
-"settlement fail"
-
-BM25 strongly matches:
-
-"MT548"
-
----
-
-## 6. Add Reranking
-
-Instead of:
-
-Retrieve Top-5
-      ↓
-Directly send to LLM
-
-We can do:
-
-Retrieve Top-20
-      ↓
-Reranker
-      ↓
-Best 5
-      ↓
-LLM
-
-This can improve the quality of the final context.
-
----
-
-## 7. Metadata Filtering
-
-Store metadata with chunks.
-
-Example:
-
-document_type = "settlement"
-
-country = "India"
-
-year = 2026
-
-message_type = "MT548"
-
-Then filter before or during retrieval.
-
-This reduces irrelevant results.
-
----
-
-## 8. Query Rewriting
-
-Sometimes user queries are unclear.
-
-Example:
-
-User:
-
-"Why failed?"
-
-Using conversation history, rewrite it to:
-
-"Why did settlement for trade ABC123 fail?"
-
-Then perform retrieval.
-
-This gives the retriever a better query.
-
----
-
-## 9. Improve Prompt
-
-Use clear grounding instructions.
-
-Example:
-
-"Answer only using the provided context.
-
-If the answer cannot be found in the context, say that there is insufficient information.
-
-Do not invent information."
-
-This helps reduce hallucination.
-
----
-
-## 10. Add Citations
-
-Return the answer with its source.
-
-Example:
-
-"Settlement failed because of insufficient securities."
-
-Source:
-
-Settlement_Guide.pdf  
-Page 12
-
-This improves:
-
-- Trust
-- Traceability
-- Verification
-
----
-
-## 11. Evaluate the RAG Pipeline
-
-Create a test dataset containing:
-
-Question
-+
-Expected Relevant Document
-+
-Expected Answer
-
-Then evaluate two things separately.
-
-### Retrieval Quality
-
-Ask:
-
-> Did the system retrieve the correct chunk?
-
-### Generation Quality
-
-Ask:
-
-> Given the correct context, did the LLM generate the correct answer?
-
-This helps identify whether the problem is with:
-
-Retrieval
-
-or
-
-Generation.
-
----
-
-# Interview Answer — How Would You Improve RAG?
-
-**"First, I would identify whether the problem is retrieval or generation.**
-
-**For retrieval, I would improve document cleaning and chunking, experiment with chunk size and overlap, evaluate the embedding model, tune Top-K, use metadata filtering, combine dense retrieval with BM25 using hybrid search, and add reranking.**
-
-**I can also use query rewriting if user queries are unclear.**
-
-**For generation, I would improve the grounding prompt, instruct the model not to invent information, allow it to say it doesn't know when context is insufficient, and provide citations.**
-
-**Finally, I would evaluate retrieval and generation separately using a test dataset rather than randomly changing parameters."**
-
----
-
-# Complete Improved RAG Architecture
-
-Documents
-    ↓
-Document Cleaning
-    ↓
-Chunking
-    ↓
-Embedding Model
-    ↓
 Vector DB + Metadata
-    ↓
+   ↓
 
 User Query
-    ↓
+   ↓
 Query Rewriting
-    ↓
-    ┌─────────────────┐
-    ↓                 ↓
-Dense Search      BM25 Search
-    ↓                 ↓
-Semantic          Keyword
-Results           Results
-    └────────┬────────┘
-             ↓
-        Hybrid Search
-             ↓
-          Reranker
-             ↓
-       Best Top-K Chunks
-             ↓
-       Grounded Prompt
-             ↓
-            LLM
-             ↓
-      Answer + Citations
+   ↓
+ ┌───────────────┐
+ ↓               ↓
+Dense           BM25
+Search          Search
+ ↓               ↓
+ └───────┬───────┘
+         ↓
+   Hybrid Results
+         ↓
+      Reranker
+         ↓
+    Best Top-K
+         ↓
+Question + Context
+         ↓
+        LLM
+         ↓
+Answer + Citation
+```
 
 ---
 
-# Final Quick Revision
+# 20. Rapid-Fire Interview Revision
 
-## Hybrid Search
+### What is RAG?
 
-**Dense + BM25**
+> Retrieval + LLM generation. It retrieves relevant external information and provides it as context to the LLM.
 
-Dense → Meaning  
-BM25 → Keywords
+### Why RAG?
 
----
+> For private, updated and domain-specific knowledge and to reduce hallucination without retraining the LLM.
 
-## Cosine Similarity
+### What are embeddings?
 
-**Compares query and document vectors.**
+> Numerical vectors representing the semantic meaning of text.
 
-Higher similarity → More semantically related.
+### What is a Vector DB?
 
----
+> A database optimized for storing embeddings and performing similarity search.
 
-## Top-K
+### Why chunk documents?
 
-**Number of chunks retrieved.**
+> To improve retrieval accuracy, create focused embeddings and avoid sending complete documents to the LLM.
 
-Too low → Miss context  
-Too high → Add noise
+### What is chunk overlap?
 
----
+> Repeating some text between consecutive chunks so context isn't lost at boundaries.
 
-## Reranking
+### Fixed vs Recursive vs Semantic chunking?
 
-**Retrieve many → Rank again → Keep best chunks.**
+> Fixed splits by size, recursive uses natural separators, and semantic splits based on topic or meaning.
 
-Example:
+### Dense retrieval?
 
-Retrieve 20 → Rerank → Best 5 → LLM
+> Embedding-based semantic retrieval.
 
----
+### Sparse/BM25?
 
-## Hallucination
+> Keyword-based retrieval.
 
-**LLM generates incorrect or unsupported information.**
+### Semantic search?
 
-RAG reduces hallucination but does not completely eliminate it.
+> Searching by meaning instead of only exact keywords.
 
----
+### Hybrid search?
 
-## RAG vs Fine-Tuning
+> Dense retrieval + BM25.
 
-**RAG → Changes/provides external context**
+### Cosine similarity?
 
-**Fine-Tuning → Changes model weights**
+> Measures similarity between query and document vectors.
 
-RAG → Knowledge  
-Fine-Tuning → Behavior/style/task adaptation
+### Top-K?
 
----
+> Number of highest-ranked chunks retrieved.
 
-## Improving RAG
+### Reranking?
 
-Clean Documents  
-↓  
-Better Chunking  
-↓  
-Better Embeddings  
-↓  
-Tune Top-K  
-↓  
-Hybrid Search  
-↓  
-Metadata Filtering  
-↓  
-Reranking  
-↓  
-Query Rewriting  
-↓  
-Better Prompt  
-↓  
-Citations  
-↓  
-Evaluation
+> Reordering retrieved chunks using a more accurate relevance model.
+
+### Hallucination?
+
+> When the LLM generates incorrect or unsupported information.
+
+### Does RAG eliminate hallucination?
+
+> No. It reduces it but does not completely eliminate it.
+
+### RAG vs Fine-Tuning?
+
+> RAG provides external context; fine-tuning changes model weights.
+
+### How do you improve RAG?
+
+> Better data → better chunking → embeddings → hybrid search → Top-K → reranking → metadata filtering → grounding prompt → evaluation.
 
 ---
 
-# 30-Second Interview Answer — Improving RAG
+# 30-Second RAG Answer
 
-**"To improve RAG, I would first identify whether the issue is retrieval or generation. For retrieval, I would optimize chunk size and overlap, embeddings and Top-K, use hybrid search combining dense retrieval with BM25, apply metadata filtering, and add reranking. For generation, I would use strong grounding prompts, citations, and allow the model to say it doesn't know when the context is insufficient. Finally, I would evaluate retrieval and generation separately instead of randomly tuning parameters."**
+> RAG stands for Retrieval-Augmented Generation. First, I load documents, divide them into chunks, create embeddings and store them in a vector database. When a user asks a question, I create the query embedding and retrieve the Top-K relevant chunks using similarity search. I can also use hybrid search with BM25 and reranking to improve retrieval. Finally, I provide the retrieved context with the question to the LLM. This allows the LLM to answer using private or updated information and helps reduce hallucination.
 
 ---
 
-# Keywords to Remember
+# Final Memory Line
+
+```text
+Documents
+→ Chunking
+→ Embeddings
+→ Vector DB
+→ Query
+→ Retrieval
+→ Top-K
+→ Reranking
+→ Context
+→ LLM
+→ Answer
+```
+
+**Dense = Meaning**
+
+**Sparse/BM25 = Keywords**
 
 **Hybrid = Dense + BM25**
 
-**Cosine Similarity = Vector Similarity**
+**Top-K = How many chunks**
 
-**Top-K = Number of Retrieved Chunks**
+**Reranking = Reorder retrieved chunks**
 
-**Reranking = Reorder Results by Relevance**
+**RAG = External knowledge/context**
 
-**Hallucination = Unsupported/Incorrect LLM Answer**
-
-**RAG = External Knowledge**
-
-**Fine-Tuning = Modify Model Weights**
-
-**Improve RAG = Chunking + Embeddings + Hybrid + Top-K + Reranking + Prompt + Evaluation**
+**Fine-Tuning = Change model weights**
