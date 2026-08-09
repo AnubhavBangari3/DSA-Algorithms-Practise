@@ -3918,3 +3918,1020 @@ GenericViewSet
 - **GenericViewSet** builds on `GenericAPIView` and is designed for ViewSets and Routers.
 - Use **GenericAPIView** for customized generic views.
 - Use **ModelViewSet (GenericViewSet)** for standard CRUD APIs with minimal code.
+
+
+# Django / DRF — Missing Interview Topics
+
+## 1. Django Request Lifecycle
+
+When a client sends a request:
+
+```text
+Client
+  ↓
+Web Server / ASGI / WSGI
+  ↓
+Middleware
+  ↓
+URL Resolver
+  ↓
+View
+  ↓
+Serializer / Business Logic
+  ↓
+ORM
+  ↓
+Database
+  ↓
+View Creates Response
+  ↓
+Middleware
+  ↓
+Client
+```
+
+### Interview Answer
+
+> When a request reaches Django, it first passes through middleware. Django's URL resolver then finds the correct view. The view executes business logic and may interact with serializers, ORM, and the database. The generated response again passes through middleware before being returned to the client.
+
+---
+
+# 2. Middleware
+
+Middleware is a layer that processes requests **before they reach the view** and responses **before they reach the client**.
+
+Common uses:
+
+* Authentication
+* Logging
+* Security
+* CORS
+* Request tracking
+* Rate limiting
+
+```text
+Request
+   ↓
+Middleware 1
+   ↓
+Middleware 2
+   ↓
+View
+   ↓
+Middleware 2
+   ↓
+Middleware 1
+   ↓
+Response
+```
+
+### Interview Answer
+
+> Middleware sits between the client and Django views. It can modify or inspect requests before the view executes and responses before they are returned.
+
+---
+
+# 3. Pagination in DRF
+
+Pagination means returning large datasets in **smaller pages instead of returning everything at once**.
+
+Without pagination:
+
+```text
+GET /employees/
+
+100,000 records ❌
+```
+
+With pagination:
+
+```text
+GET /employees/?page=1
+
+20 records ✅
+```
+
+DRF supports:
+
+* PageNumberPagination
+* LimitOffsetPagination
+* CursorPagination
+
+Example:
+
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS":
+        "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+}
+```
+
+### Why?
+
+* Faster APIs
+* Lower database load
+* Lower network usage
+* Better frontend performance
+
+### Interview Answer
+
+> Pagination splits large API results into smaller pages. It improves response time, reduces memory usage and prevents returning thousands of database records in a single request.
+
+---
+
+# 4. Throttling in DRF
+
+Throttling limits **how frequently a client can call an API**.
+
+Example:
+
+```text
+User allowed:
+100 requests / minute
+```
+
+If exceeded:
+
+```text
+429 Too Many Requests
+```
+
+DRF supports:
+
+* AnonRateThrottle
+* UserRateThrottle
+* ScopedRateThrottle
+
+Example:
+
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.UserRateThrottle"
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "user": "100/min"
+    }
+}
+```
+
+### Interview Answer
+
+> DRF throttling controls how frequently users can call APIs. It protects the application from excessive traffic and API abuse.
+
+---
+
+# 5. Redis Caching
+
+Redis is an **in-memory data store** commonly used as a cache.
+
+Instead of querying the database repeatedly:
+
+```text
+Request
+  ↓
+Database
+```
+
+we can do:
+
+```text
+Request
+  ↓
+Redis
+ ↓   ↓
+Hit  Miss
+ ↓     ↓
+Return DB → Cache
+```
+
+Example:
+
+```python
+data = cache.get("products")
+
+if not data:
+    data = Product.objects.all()
+    cache.set("products", data, timeout=300)
+```
+
+### Why Redis?
+
+* Very fast
+* In-memory
+* Supports expiration
+* Works well across multiple Django servers
+
+### Interview Answer
+
+> Redis caching stores frequently accessed data in memory so repeated requests do not always hit the database. This reduces database load and improves API response time.
+
+---
+
+# 6. What is TTL?
+
+TTL means **Time To Live**.
+
+It defines how long cached data remains valid.
+
+Example:
+
+```python
+cache.set(
+    "product:101",
+    product,
+    timeout=300
+)
+```
+
+Here:
+
+```text
+TTL = 300 seconds
+```
+
+After 5 minutes, the cache automatically expires.
+
+### Interview Answer
+
+> TTL defines how long a cached value should remain available before Redis automatically expires it.
+
+---
+
+# 7. Cache Invalidation
+
+Cache invalidation means removing or updating cached data when the original data changes.
+
+Example:
+
+```text
+Product Updated
+      ↓
+Database Updated
+      ↓
+Delete Old Redis Cache
+      ↓
+Next Request Rebuilds Cache
+```
+
+Example:
+
+```python
+cache.delete("product:101")
+```
+
+Why?
+
+Without invalidation:
+
+```text
+Database = New Data
+Redis = Old Data ❌
+```
+
+### Interview Answer
+
+> Cache invalidation ensures stale cached data is removed whenever the underlying database data changes. Common approaches are TTL-based expiration or explicitly deleting/updating the relevant cache key after writes.
+
+---
+
+# 8. Celery
+
+Celery is a **distributed task queue used to run background tasks outside the normal HTTP request-response cycle**.
+
+Example:
+
+User uploads report.
+
+Bad approach:
+
+```text
+Request
+ ↓
+Generate PDF
+ ↓
+Send Email
+ ↓
+20 seconds
+ ↓
+Response
+```
+
+Better:
+
+```text
+Request
+ ↓
+Create Celery Task
+ ↓
+Immediate Response
+
+        Celery Worker
+             ↓
+        Generate PDF
+             ↓
+         Send Email
+```
+
+Common use cases:
+
+* Sending emails
+* Generating reports
+* Processing files
+* Image processing
+* Notifications
+* Long-running AI tasks
+
+### Interview Answer
+
+> Celery is used to move slow or long-running work out of the HTTP request cycle. Django sends the task to a queue, and a Celery worker processes it asynchronously.
+
+---
+
+# 9. Redis + Celery
+
+Redis can act as a **message broker** between Django and Celery.
+
+```text
+Django
+  ↓
+Task
+  ↓
+Redis Queue
+  ↓
+Celery Worker
+  ↓
+Process Task
+```
+
+Example:
+
+```python
+@shared_task
+def send_email_task(user_id):
+    ...
+```
+
+Call:
+
+```python
+send_email_task.delay(user.id)
+```
+
+`.delay()` sends the task to the queue instead of executing it directly.
+
+---
+
+# 10. Background Task vs Async Request
+
+These are different.
+
+### Async View
+
+Useful when the request is waiting for I/O:
+
+```text
+API Calls
+Network Requests
+I/O operations
+```
+
+### Celery
+
+Useful when work should continue independently after the request:
+
+```text
+Email
+Reports
+File processing
+AI generation
+```
+
+### Easy Interview Difference
+
+> **Async = Don't block while waiting.**
+
+> **Celery = Run work outside the request process.**
+
+---
+
+# 11. WebSockets
+
+WebSocket provides **persistent two-way communication between client and server**.
+
+Normal HTTP:
+
+```text
+Client → Request
+Server → Response
+Connection Ends
+```
+
+WebSocket:
+
+```text
+Client ↔ Server
+Client ↔ Server
+Client ↔ Server
+```
+
+Connection remains open.
+
+Useful for:
+
+* Chat
+* Live notifications
+* Live dashboards
+* Tracking systems
+* Real-time updates
+
+In Django, WebSockets are commonly implemented using:
+
+```text
+Django Channels
++
+ASGI
+```
+
+### Interview Answer
+
+> WebSockets provide a persistent bidirectional connection between the client and server, allowing the server to push updates without waiting for a new HTTP request.
+
+---
+
+# 12. WebSockets vs Polling
+
+### Polling
+
+Frontend repeatedly asks:
+
+```text
+Any update?
+Any update?
+Any update?
+Any update?
+```
+
+Example:
+
+```text
+GET /updates every 5 seconds
+```
+
+Creates unnecessary requests.
+
+### WebSocket
+
+```text
+Connection Open
+      ↓
+Server pushes update whenever required
+```
+
+### Interview Answer
+
+> Polling repeatedly sends HTTP requests to check for updates, while WebSockets maintain one persistent connection and allow the server to push updates immediately.
+
+---
+
+# 13. Database Query Optimization
+
+If a Django API becomes slow, I first inspect the database queries.
+
+Common optimizations:
+
+* Use `select_related()`
+* Use `prefetch_related()`
+* Add indexes
+* Avoid N+1 queries
+* Fetch only required columns
+* Use pagination
+* Avoid unnecessary `.all()`
+* Use `exists()` instead of loading objects
+* Use `count()` instead of loading all rows
+* Cache frequently accessed data
+
+Example:
+
+Instead of:
+
+```python
+Employee.objects.all()
+```
+
+if only two fields are required:
+
+```python
+Employee.objects.values(
+    "id",
+    "name"
+)
+```
+
+### Interview Answer
+
+> I optimize Django database performance by reducing the number of queries, solving N+1 problems, adding indexes to frequently searched columns, using `select_related` and `prefetch_related`, paginating large datasets and caching frequently requested results.
+
+---
+
+# 14. Database Index
+
+An index is a database structure that helps the database **find rows faster without scanning the complete table**.
+
+Without index:
+
+```text
+1,000,000 records
+      ↓
+Scan records
+      ↓
+Find email
+```
+
+With index:
+
+```text
+Index
+ ↓
+Locate Record Quickly
+```
+
+Django example:
+
+```python
+email = models.EmailField(
+    db_index=True
+)
+```
+
+or:
+
+```python
+class Meta:
+    indexes = [
+        models.Index(
+            fields=["email"]
+        )
+    ]
+```
+
+Useful on columns frequently used in:
+
+* WHERE
+* JOIN
+* ORDER BY
+* Filtering
+
+### Trade-off
+
+Indexes improve reads but:
+
+* Consume storage
+* Slightly slow INSERT/UPDATE/DELETE
+
+### Interview Answer
+
+> Database indexes improve read performance by allowing the database to locate rows without scanning the entire table. I add them mainly to frequently filtered, joined or sorted columns, but avoid unnecessary indexes because they add storage and write overhead.
+
+---
+
+# 15. N+1 Query Problem
+
+N+1 happens when:
+
+```text
+1 query retrieves parent records
+
++
+
+N additional queries retrieve
+related records
+```
+
+Example:
+
+```python
+books = Book.objects.all()
+
+for book in books:
+    print(book.author.name)
+```
+
+Suppose:
+
+```text
+100 Books
+```
+
+Queries:
+
+```text
+1 Book Query
++
+100 Author Queries
+
+= 101 Queries ❌
+```
+
+Fix:
+
+```python
+books = Book.objects.select_related(
+    "author"
+)
+```
+
+Now:
+
+```text
+1 JOIN Query ✅
+```
+
+### Interview Answer
+
+> N+1 happens when one query fetches the main objects and then another query runs for each object to fetch related data. I usually solve it using `select_related()` for ForeignKey/OneToOne or `prefetch_related()` for many-to-many and reverse relationships.
+
+---
+
+# 16. `select_related()` vs `prefetch_related()`
+
+You already know the main difference:
+
+```text
+ForeignKey / OneToOne
+        ↓
+select_related()
+        ↓
+SQL JOIN
+```
+
+```text
+ManyToMany / Reverse FK
+        ↓
+prefetch_related()
+        ↓
+Separate Queries
++
+Python Mapping
+```
+
+Interview shortcut:
+
+> **select_related = JOIN**
+
+> **prefetch_related = Separate queries + combine**
+
+---
+
+# 17. How Would You Handle 1000+ Requests Per Minute?
+
+1000 RPM is approximately:
+
+```text
+~17 requests / second
+```
+
+This is not automatically huge traffic.
+
+I would first measure the bottleneck before scaling.
+
+Possible architecture:
+
+```text
+                 Users
+                   ↓
+             Load Balancer
+             /           \
+            ↓             ↓
+      Django Server   Django Server
+            ↓             ↓
+              PostgreSQL
+                   ↓
+                 Redis
+
+Background Work
+      ↓
+Redis Queue
+      ↓
+Celery Workers
+```
+
+Steps:
+
+1. Optimize slow database queries.
+2. Add proper database indexes.
+3. Use Redis caching.
+4. Add pagination.
+5. Move slow work to Celery.
+6. Run multiple application workers.
+7. Add more Django instances if traffic increases.
+8. Put a load balancer in front.
+9. Add rate limiting/throttling.
+10. Monitor CPU, memory, latency and DB usage.
+
+### Interview Answer
+
+> For 1000+ RPM, I would first identify the bottleneck rather than blindly scaling. I would optimize queries and indexes, add Redis caching, pagination and Celery for background tasks. If one server is insufficient, I would horizontally scale Django instances behind a load balancer and use rate limiting to protect the APIs.
+
+---
+
+# 18. Horizontal Scaling
+
+Horizontal scaling means:
+
+> **Adding more servers/instances instead of increasing the power of one server.**
+
+Example:
+
+Before:
+
+```text
+Users
+ ↓
+Django Server
+```
+
+After:
+
+```text
+            Users
+              ↓
+        Load Balancer
+        /     |      \
+       ↓      ↓       ↓
+ Django 1  Django 2  Django 3
+```
+
+### Horizontal vs Vertical
+
+Vertical:
+
+```text
+4 GB RAM
+   ↓
+16 GB RAM
+```
+
+Horizontal:
+
+```text
+1 Server
+   ↓
+3 Servers
+```
+
+### Interview Answer
+
+> Horizontal scaling means adding multiple application instances to handle increased traffic, while vertical scaling means increasing CPU or RAM on the existing server.
+
+---
+
+# 19. Load Balancing
+
+A load balancer distributes incoming traffic between multiple application servers.
+
+```text
+             Users
+               ↓
+         Load Balancer
+       /       |       \
+      ↓        ↓        ↓
+ Django 1  Django 2  Django 3
+```
+
+Benefits:
+
+* Distributes traffic
+* Prevents one server from overloading
+* Improves availability
+* Supports horizontal scaling
+
+Examples:
+
+```text
+Nginx
+AWS ALB
+Azure Application Gateway
+Cloud Load Balancers
+```
+
+### Interview Answer
+
+> A load balancer distributes incoming requests across multiple Django instances so no single server becomes overloaded. It is commonly used with horizontal scaling for better performance and availability.
+
+---
+
+# 20. Rate Limiting
+
+Rate limiting restricts **how many requests a client can send within a time period**.
+
+Example:
+
+```text
+100 requests / minute / user
+```
+
+After limit:
+
+```http
+429 Too Many Requests
+```
+
+Can be implemented at different levels:
+
+```text
+API Gateway
+Load Balancer / Nginx
+Redis
+DRF Throttling
+```
+
+### Why?
+
+* Prevent abuse
+* Prevent accidental overload
+* Protect expensive endpoints
+* Fair resource usage
+
+### Interview Answer
+
+> Rate limiting restricts the number of requests a user or IP can make within a time window. It protects APIs from abuse and traffic spikes and usually returns HTTP 429 when the limit is exceeded.
+
+---
+
+# 21. Throttling vs Rate Limiting
+
+They are closely related.
+
+For interview purposes:
+
+> **Rate limiting is the overall concept of limiting request frequency.**
+
+> **DRF throttling is Django REST Framework's built-in mechanism for implementing request limits.**
+
+Example:
+
+```text
+Business Requirement:
+100 requests/minute
+        ↓
+Rate Limit
+
+Implementation:
+DRF UserRateThrottle
+        ↓
+Throttling
+```
+
+---
+
+# Final Scaling Architecture
+
+```text
+                    Users
+                      ↓
+                Rate Limiting
+                      ↓
+                Load Balancer
+               /      |       \
+              ↓       ↓        ↓
+          Django   Django   Django
+          Worker   Worker   Worker
+               \     |      /
+                     ↓
+                   Redis
+               Cache + TTL
+                     ↓
+                 PostgreSQL
+                     ↓
+                  Indexes
+
+
+Long Running Tasks
+        ↓
+      Redis
+        ↓
+  Celery Workers
+
+
+Real-Time Features
+        ↓
+   WebSockets
+        ↓
+ Django Channels
+```
+
+---
+
+# Rapid-Fire Revision
+
+### Pagination?
+
+> Break large API results into smaller pages.
+
+### Throttling?
+
+> Limit how frequently clients can call an API.
+
+### Redis?
+
+> Fast in-memory store commonly used for caching.
+
+### TTL?
+
+> How long cached data remains valid.
+
+### Cache Invalidation?
+
+> Remove/update cached data when source data changes.
+
+### Celery?
+
+> Run background tasks outside the HTTP request cycle.
+
+### WebSocket?
+
+> Persistent bidirectional client-server connection.
+
+### Index?
+
+> Database structure that speeds up lookups.
+
+### N+1?
+
+> 1 main query + N queries for related objects.
+
+### Fix N+1?
+
+> `select_related()` / `prefetch_related()`.
+
+### `select_related()`?
+
+> FK/OneToOne → SQL JOIN.
+
+### `prefetch_related()`?
+
+> M2M/Reverse FK → Separate queries + Python mapping.
+
+### Horizontal Scaling?
+
+> Add more application servers.
+
+### Vertical Scaling?
+
+> Increase CPU/RAM of one server.
+
+### Load Balancer?
+
+> Distributes requests across multiple servers.
+
+### Rate Limiting?
+
+> Restrict requests per user/IP/time period.
+
+### 1000 RPM?
+
+> Optimize DB + indexes → Redis → pagination → Celery → multiple workers → horizontal scaling + load balancer if needed.
+
+---
+
+# Final Memory Lines
+
+```text
+Pagination = Smaller API Responses
+
+Throttling = Control API Frequency
+
+Redis = Fast Cache
+
+TTL = Cache Expiry
+
+Invalidation = Remove Stale Cache
+
+Celery = Background Tasks
+
+WebSocket = Real-Time Two-Way Communication
+```
+
+```text
+N+1 = Too Many Related Queries
+
+select_related = JOIN
+
+prefetch_related = Separate Queries
+
+Index = Faster Database Search
+```
+
+```text
+Horizontal Scaling = More Servers
+
+Vertical Scaling = Bigger Server
+
+Load Balancer = Distribute Traffic
+
+Rate Limiting = Protect API
+
+1000+ RPM = Optimize → Cache → Async → Scale
+```
