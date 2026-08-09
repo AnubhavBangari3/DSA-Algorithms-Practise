@@ -854,3 +854,54 @@ That is why embeddings are useful for **semantic search**.
 
 **Text → Embedding Model → Vector → Vector DB → Query Vector → Cosine Similarity → Top-K → Relevant Chunks → LLM**
 
+# Vector Database in RAG
+
+## What is a Vector Database?
+
+A **Vector Database** is a database designed to store, index, and search **high-dimensional vectors (embeddings)** efficiently.
+
+In RAG, document chunks are converted into embeddings and stored in a Vector DB.
+
+Simple definition:
+
+> **Vector DB stores embeddings and helps us quickly find the most semantically similar chunks for a user's query.**
+
+---
+
+# Why Do We Need a Vector DB?
+
+Suppose we have **1 million document chunks**.
+
+When a user asks a question, comparing the query embedding manually with all 1 million embeddings would be inefficient.
+
+A Vector DB provides optimized indexing and similarity search to quickly find the most relevant vectors.
+
+So:
+
+User Question
+      ↓
+Query Embedding
+      ↓
+Vector Database
+      ↓
+Similarity Search
+      ↓
+Top-K Relevant Chunks
+      ↓
+LLM
+      ↓
+Answer
+
+---
+
+# What Do We Store in a Vector DB?
+
+Usually, we store three things:
+
+### 1. Embedding
+
+Numerical representation of the chunk.
+
+```text
+[0.21, -0.45, 0.78, 0.12, ...]
+
