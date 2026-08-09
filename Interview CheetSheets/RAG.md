@@ -1107,3 +1107,880 @@ There is no exact match between:
 ```text
 vacation days
 
+# RAG Interview Notes — Hybrid Search, Cosine Similarity, Top-K, Reranking, Hallucination, RAG vs Fine-Tuning, Improving RAG
+
+---
+
+# 1. Hybrid Search
+
+## What is Hybrid Search?
+
+**Hybrid Search combines Dense Retrieval and Sparse Retrieval (BM25).**
+
+In simple terms:
+
+> **Hybrid Search = Semantic Search + Keyword Search**
+
+### Dense Retrieval
+Dense retrieval uses **embeddings** to search based on semantic meaning.
+
+Example:
+
+User asks:
+
+"Why did my trade fail?"
+
+Document says:
+
+"Settlement was unsuccessful due to insufficient securities."
+
+Even though the exact words are different, dense retrieval can understand that they have similar meanings.
+
+### Sparse Retrieval / BM25
+BM25 searches mainly using **keywords and exact terms**.
+
+It is useful for:
+
+- Error codes
+- SWIFT message types
+- Product IDs
+- Employee IDs
+- Names
+- Technical terms
+
+Example:
+
+User searches:
+
+"MT548 settlement failure"
+
+BM25 can strongly match documents containing the exact keyword `MT548`.
+
+### Hybrid Search Flow
+
+User Query
+     ↓
+     ├───────────────┐
+     ↓               ↓
+Dense Search      BM25 Search
+     ↓               ↓
+Semantic          Keyword
+Results           Results
+     ↓               ↓
+     └───────┬───────┘
+             ↓
+       Combine Results
+             ↓
+          Reranking
+             ↓
+       Top-K Chunks
+             ↓
+            LLM
+
+### Interview Answer
+
+**"Hybrid search combines dense embedding-based retrieval with sparse keyword-based retrieval such as BM25. Dense retrieval is good for semantic meaning, while BM25 is good for exact keywords, IDs, codes, and technical terms. Combining both generally gives better retrieval coverage."**
+
+---
+
+# 2. Cosine Similarity
+
+## What is Cosine Similarity?
+
+**Cosine Similarity measures how similar two vectors are based on the angle between them.**
+
+In RAG, we can use it to compare:
+
+User Query Embedding
+
+with
+
+Document Chunk Embeddings
+
+Example:
+
+Query vs Chunk A → 0.95  
+Query vs Chunk B → 0.82  
+Query vs Chunk C → 0.35  
+
+Chunk A is the most similar.
+
+### Formula
+
+Cosine Similarity:
+
+cos(A, B) = (A · B) / (||A|| × ||B||)
+
+For interviews, understanding the concept is more important than memorizing the formula.
+
+### RAG Flow
+
+User Question
+     ↓
+Embedding Model
+     ↓
+Query Vector
+     ↓
+Compare with Document Vectors
+     ↓
+Cosine Similarity
+     ↓
+Most Similar Chunks
+
+### Interview Answer
+
+**"Cosine similarity measures similarity between two vectors based on their direction. In RAG, I can use it to compare the user's query embedding with document embeddings and retrieve the most semantically similar chunks."**
+
+### One-Line Answer
+
+> **Cosine similarity helps us measure how semantically similar the query embedding is to document embeddings.**
+
+---
+
+# 3. Top-K
+
+## What is Top-K?
+
+**Top-K is the number of highest-ranked chunks we retrieve for a user query.**
+
+Example:
+
+Chunk A → 0.95  
+Chunk B → 0.91  
+Chunk C → 0.86  
+Chunk D → 0.65  
+Chunk E → 0.40  
+
+If:
+
+Top-K = 3
+
+We retrieve:
+
+Chunk A  
+Chunk B  
+Chunk C
+
+These chunks are then provided to the LLM.
+
+## What if Top-K is Too Small?
+
+Example:
+
+Top-K = 1
+
+We may miss important context that exists in another chunk.
+
+## What if Top-K is Too Large?
+
+Example:
+
+Top-K = 20
+
+We may retrieve too much irrelevant information.
+
+This can:
+
+- Add noise
+- Increase token usage
+- Increase cost
+- Reduce answer quality
+
+Therefore, Top-K should be **tested and tuned**.
+
+### Interview Answer
+
+**"Top-K defines how many of the highest-ranked chunks we retrieve. If K is too small, we may miss important context. If K is too large, we may introduce irrelevant information and increase token usage. Therefore, I tune Top-K based on retrieval performance."**
+
+### One-Line Answer
+
+> **Top-K is the number of most relevant chunks retrieved from the knowledge base.**
+
+---
+
+# 4. Reranking
+
+## What is Reranking?
+
+**Reranking is a second-stage retrieval process where retrieved chunks are ranked again using a more accurate relevance model.**
+
+For example:
+
+First retrieve:
+
+Top 20 chunks
+
+Then:
+
+Top 20
+   ↓
+Reranker
+   ↓
+Best 5
+   ↓
+LLM
+
+## Why Do We Need Reranking?
+
+Vector search is good at quickly finding possible candidates, but the initial ranking may not always be perfect.
+
+A reranker performs a more detailed comparison between the query and retrieved chunks.
+
+Example:
+
+Initial Retrieval:
+
+1. Chunk A
+2. Chunk B
+3. Chunk C
+4. Chunk D
+5. Chunk E
+
+After Reranking:
+
+1. Chunk C
+2. Chunk A
+3. Chunk E
+4. Chunk B
+5. Chunk D
+
+Then we can send only:
+
+Chunk C  
+Chunk A  
+Chunk E
+
+to the LLM.
+
+## Typical Reranking Flow
+
+User Query
+    ↓
+Retrieve Top-20
+    ↓
+Reranker
+    ↓
+Select Best 5
+    ↓
+LLM
+
+### Interview Answer
+
+**"Reranking is a second-stage retrieval technique. First, I retrieve a larger set of candidate chunks using dense, sparse, or hybrid retrieval. Then a reranking model compares those chunks more accurately with the query and reorders them based on relevance. Finally, I send only the best chunks to the LLM."**
+
+### One-Line Answer
+
+> **Reranking improves retrieval by reordering initially retrieved chunks based on their actual relevance to the query.**
+
+---
+
+# 5. Hallucination
+
+## What is Hallucination?
+
+**Hallucination happens when an LLM generates information that sounds correct but is actually incorrect or unsupported by the available context.**
+
+Example:
+
+Actual document:
+
+"Employees receive 20 annual leaves."
+
+LLM answers:
+
+"Employees receive 30 annual leaves."
+
+This is hallucination.
+
+## Does RAG Remove Hallucination?
+
+**No.**
+
+RAG helps **reduce hallucination**, but it does not completely eliminate it.
+
+There are mainly two possible problems:
+
+### Retrieval Problem
+
+Wrong chunks retrieved
+       ↓
+Wrong context
+       ↓
+Wrong answer
+
+### Generation Problem
+
+Correct chunks retrieved
+       ↓
+LLM ignores or misunderstands context
+       ↓
+Wrong answer
+
+## How Can We Reduce Hallucination?
+
+We can:
+
+- Improve retrieval quality
+- Improve chunking
+- Use hybrid search
+- Add reranking
+- Tune Top-K
+- Use metadata filtering
+- Improve prompts
+- Add citations
+- Allow the model to say "I don't know"
+
+Example prompt:
+
+"Answer only using the provided context.
+
+If the answer is not available in the context, say that there is insufficient information.
+
+Do not invent information."
+
+### Interview Answer
+
+**"Hallucination is when an LLM generates incorrect or unsupported information. RAG reduces hallucination by grounding the LLM using retrieved documents, but it doesn't completely eliminate it. I can further reduce hallucination using better retrieval, reranking, strong grounding prompts, citations, and allowing the model to say it doesn't know when context is insufficient."**
+
+### One-Line Answer
+
+> **Hallucination is when an LLM confidently generates information that is incorrect or unsupported by the provided context.**
+
+---
+
+# 6. RAG vs Fine-Tuning
+
+## RAG
+
+RAG provides **external knowledge to the LLM at runtime**.
+
+Documents
+    ↓
+Chunking
+    ↓
+Embeddings
+    ↓
+Retrieval
+    ↓
+Relevant Context
+    ↓
+LLM
+    ↓
+Answer
+
+The LLM's model weights are not changed.
+
+RAG is useful for:
+
+- Private company data
+- Frequently changing information
+- Latest documents
+- Large knowledge bases
+- Source citations
+- Internal documentation
+
+---
+
+## Fine-Tuning
+
+Fine-tuning means training an existing model further using specialized examples.
+
+Training Data
+     ↓
+Fine-Tuning
+     ↓
+Model Weights Updated
+     ↓
+Customized Model
+
+Fine-tuning is useful for:
+
+- Specific response style
+- Specific output format
+- Specialized behavior
+- Domain-specific tasks
+- Repeated task patterns
+
+---
+
+## Simple Example
+
+Suppose I am building an HR chatbot.
+
+### Requirement:
+
+The chatbot needs access to the latest company HR policies.
+
+Use:
+
+**RAG**
+
+because policies can change frequently.
+
+### Requirement:
+
+The chatbot should always answer in a specific company-approved style and format.
+
+Fine-tuning may be useful.
+
+---
+
+## Main Difference
+
+RAG:
+
+> Changes the **context/information given to the model**.
+
+Fine-Tuning:
+
+> Changes the **model itself by updating its weights**.
+
+---
+
+## RAG vs Fine-Tuning Comparison
+
+| RAG | Fine-Tuning |
+|---|---|
+| Provides external knowledge | Changes model weights |
+| Good for changing information | Good for specialized behavior |
+| Documents can easily be updated | Usually requires retraining for changes |
+| Supports citations | Does not naturally provide citations |
+| Good for private knowledge | Good for style/task adaptation |
+| Retrieval happens at runtime | Knowledge/behavior is learned during training |
+
+## Can We Use Both?
+
+Yes.
+
+Fine-Tuned LLM
+      +
+RAG
+      ↓
+Application
+
+For example:
+
+RAG → provides company knowledge
+
+Fine-Tuning → controls model behavior/style
+
+### Interview Answer
+
+**"RAG and fine-tuning solve different problems. RAG retrieves external information and provides it to the LLM as context, so it is useful for private or frequently changing knowledge. Fine-tuning modifies the model weights and is more useful for adapting model behavior, style, output format, or specialized tasks. We can also use both together."**
+
+### One-Line Answer
+
+> **RAG changes the context given to the model, while fine-tuning changes the model weights.**
+
+---
+
+# 7. How to Improve a RAG System?
+
+This is a very important interview question.
+
+First, I would identify whether the problem is:
+
+**Retrieval**
+
+or
+
+**Generation**
+
+I would not immediately change the LLM.
+
+---
+
+## 1. Improve Document Quality
+
+Clean the source documents.
+
+Remove:
+
+- Duplicate content
+- Broken text
+- HTML noise
+- Unnecessary headers/footers
+- Outdated documents
+
+Bad Data
+   ↓
+Bad Retrieval
+   ↓
+Bad Answer
+
+---
+
+## 2. Improve Chunking
+
+Experiment with:
+
+- Chunk size
+- Chunk overlap
+- Recursive chunking
+- Semantic chunking
+- Document-aware chunking
+
+Example:
+
+500 tokens + 50 overlap
+
+vs
+
+800 tokens + 100 overlap
+
+Then evaluate which performs better.
+
+---
+
+## 3. Improve Embedding Model
+
+Use an embedding model suitable for:
+
+- Domain
+- Language
+- Document type
+
+Better embeddings can improve semantic retrieval.
+
+---
+
+## 4. Tune Top-K
+
+Experiment with:
+
+Top-K = 3  
+Top-K = 5  
+Top-K = 10  
+
+Too small:
+
+May miss important context.
+
+Too large:
+
+May introduce irrelevant context.
+
+---
+
+## 5. Use Hybrid Search
+
+Combine:
+
+Dense Retrieval
++
+BM25
+
+This gives:
+
+Semantic Search
++
+Keyword Search
+
+Useful when queries contain both natural language and exact identifiers.
+
+Example:
+
+"Why did MT548 settlement fail?"
+
+Dense search understands:
+
+"settlement fail"
+
+BM25 strongly matches:
+
+"MT548"
+
+---
+
+## 6. Add Reranking
+
+Instead of:
+
+Retrieve Top-5
+      ↓
+Directly send to LLM
+
+We can do:
+
+Retrieve Top-20
+      ↓
+Reranker
+      ↓
+Best 5
+      ↓
+LLM
+
+This can improve the quality of the final context.
+
+---
+
+## 7. Metadata Filtering
+
+Store metadata with chunks.
+
+Example:
+
+document_type = "settlement"
+
+country = "India"
+
+year = 2026
+
+message_type = "MT548"
+
+Then filter before or during retrieval.
+
+This reduces irrelevant results.
+
+---
+
+## 8. Query Rewriting
+
+Sometimes user queries are unclear.
+
+Example:
+
+User:
+
+"Why failed?"
+
+Using conversation history, rewrite it to:
+
+"Why did settlement for trade ABC123 fail?"
+
+Then perform retrieval.
+
+This gives the retriever a better query.
+
+---
+
+## 9. Improve Prompt
+
+Use clear grounding instructions.
+
+Example:
+
+"Answer only using the provided context.
+
+If the answer cannot be found in the context, say that there is insufficient information.
+
+Do not invent information."
+
+This helps reduce hallucination.
+
+---
+
+## 10. Add Citations
+
+Return the answer with its source.
+
+Example:
+
+"Settlement failed because of insufficient securities."
+
+Source:
+
+Settlement_Guide.pdf  
+Page 12
+
+This improves:
+
+- Trust
+- Traceability
+- Verification
+
+---
+
+## 11. Evaluate the RAG Pipeline
+
+Create a test dataset containing:
+
+Question
++
+Expected Relevant Document
++
+Expected Answer
+
+Then evaluate two things separately.
+
+### Retrieval Quality
+
+Ask:
+
+> Did the system retrieve the correct chunk?
+
+### Generation Quality
+
+Ask:
+
+> Given the correct context, did the LLM generate the correct answer?
+
+This helps identify whether the problem is with:
+
+Retrieval
+
+or
+
+Generation.
+
+---
+
+# Interview Answer — How Would You Improve RAG?
+
+**"First, I would identify whether the problem is retrieval or generation.**
+
+**For retrieval, I would improve document cleaning and chunking, experiment with chunk size and overlap, evaluate the embedding model, tune Top-K, use metadata filtering, combine dense retrieval with BM25 using hybrid search, and add reranking.**
+
+**I can also use query rewriting if user queries are unclear.**
+
+**For generation, I would improve the grounding prompt, instruct the model not to invent information, allow it to say it doesn't know when context is insufficient, and provide citations.**
+
+**Finally, I would evaluate retrieval and generation separately using a test dataset rather than randomly changing parameters."**
+
+---
+
+# Complete Improved RAG Architecture
+
+Documents
+    ↓
+Document Cleaning
+    ↓
+Chunking
+    ↓
+Embedding Model
+    ↓
+Vector DB + Metadata
+    ↓
+
+User Query
+    ↓
+Query Rewriting
+    ↓
+    ┌─────────────────┐
+    ↓                 ↓
+Dense Search      BM25 Search
+    ↓                 ↓
+Semantic          Keyword
+Results           Results
+    └────────┬────────┘
+             ↓
+        Hybrid Search
+             ↓
+          Reranker
+             ↓
+       Best Top-K Chunks
+             ↓
+       Grounded Prompt
+             ↓
+            LLM
+             ↓
+      Answer + Citations
+
+---
+
+# Final Quick Revision
+
+## Hybrid Search
+
+**Dense + BM25**
+
+Dense → Meaning  
+BM25 → Keywords
+
+---
+
+## Cosine Similarity
+
+**Compares query and document vectors.**
+
+Higher similarity → More semantically related.
+
+---
+
+## Top-K
+
+**Number of chunks retrieved.**
+
+Too low → Miss context  
+Too high → Add noise
+
+---
+
+## Reranking
+
+**Retrieve many → Rank again → Keep best chunks.**
+
+Example:
+
+Retrieve 20 → Rerank → Best 5 → LLM
+
+---
+
+## Hallucination
+
+**LLM generates incorrect or unsupported information.**
+
+RAG reduces hallucination but does not completely eliminate it.
+
+---
+
+## RAG vs Fine-Tuning
+
+**RAG → Changes/provides external context**
+
+**Fine-Tuning → Changes model weights**
+
+RAG → Knowledge  
+Fine-Tuning → Behavior/style/task adaptation
+
+---
+
+## Improving RAG
+
+Clean Documents  
+↓  
+Better Chunking  
+↓  
+Better Embeddings  
+↓  
+Tune Top-K  
+↓  
+Hybrid Search  
+↓  
+Metadata Filtering  
+↓  
+Reranking  
+↓  
+Query Rewriting  
+↓  
+Better Prompt  
+↓  
+Citations  
+↓  
+Evaluation
+
+---
+
+# 30-Second Interview Answer — Improving RAG
+
+**"To improve RAG, I would first identify whether the issue is retrieval or generation. For retrieval, I would optimize chunk size and overlap, embeddings and Top-K, use hybrid search combining dense retrieval with BM25, apply metadata filtering, and add reranking. For generation, I would use strong grounding prompts, citations, and allow the model to say it doesn't know when the context is insufficient. Finally, I would evaluate retrieval and generation separately instead of randomly tuning parameters."**
+
+---
+
+# Keywords to Remember
+
+**Hybrid = Dense + BM25**
+
+**Cosine Similarity = Vector Similarity**
+
+**Top-K = Number of Retrieved Chunks**
+
+**Reranking = Reorder Results by Relevance**
+
+**Hallucination = Unsupported/Incorrect LLM Answer**
+
+**RAG = External Knowledge**
+
+**Fine-Tuning = Modify Model Weights**
+
+**Improve RAG = Chunking + Embeddings + Hybrid + Top-K + Reranking + Prompt + Evaluation**
