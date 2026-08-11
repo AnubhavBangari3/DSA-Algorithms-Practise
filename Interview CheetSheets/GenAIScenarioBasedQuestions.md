@@ -1362,3 +1362,217 @@ So I would use an agent only when the application genuinely requires **dynamic d
 ### Quick Revision
 
 > LLM generates, RAG retrieves knowledge and answers, while an Agent dynamically decides what to do, uses tools, maintains state, and takes multi-step actions.
+
+```
+
+## Q. Agent is choosing the wrong tool. How would you fix it?
+
+### Interview Answer
+
+If an agent is choosing the wrong tool, I would first check **why the tool selection is ambiguous**.
+
+Usually, the problem comes from one of these areas:
+
+- Tool descriptions are unclear or overlapping.
+- The prompt does not clearly define when each tool should be used.
+- Too many similar tools are exposed to the agent.
+- The user query is ambiguous.
+- There is no validation before executing the selected tool.
+
+First, I would improve the **tool definitions and descriptions**.
+
+For example, instead of defining a tool as:
+
+```text
+get_data()
+```
+
+I would define it more clearly as:
+
+```text
+get_trade_status(trade_id)
+
+Use only when the user wants the latest trade settlement status.
+Do not use this tool for policy or documentation questions.
+```
+
+The clearer the tool purpose, inputs, and limitations are, the easier it is for the agent to choose correctly.
+
+Second, I would improve the routing instructions.
+
+For example:
+
+```text
+Trade status → Database/API tool
+Settlement policy → RAG tool
+Create incident → Ticket API
+```
+
+If tool selection is business-critical, I would not rely entirely on free-form LLM reasoning.
+
+I could introduce a **routing or classification step** before tool execution.
+
+For example:
+
+```text
+User Query
+↓
+Intent Classification
+↓
+Select Allowed Tool
+↓
+Execute
+```
+
+I would also validate tool arguments before execution.
+
+For sensitive actions, I would add confirmation or human approval.
+
+Finally, I would collect cases where the wrong tool was selected and add them to an evaluation dataset. Then I could test tool-selection accuracy whenever I change the prompt, model, or tool descriptions.
+
+So my production approach would be:
+
+**Clarify tool descriptions → reduce overlap → improve routing → validate before execution → evaluate failed cases.**
+
+### Simple Flow
+
+```text
+User Request
+↓
+Identify Intent
+↓
+Select Candidate Tool
+↓
+Validate Tool + Arguments
+↓
+Correct Tool?
+   ↓
+Yes → Execute
+   ↓
+No → Re-route / Fallback
+↓
+Observe Result
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. Would you let the LLM freely choose from every available tool?
+
+Not always.
+
+If I have only a few simple and clearly different tools, direct tool selection by the LLM may be enough.
+
+But if I have many tools or high-risk actions, I would restrict the available tools based on the current workflow or intent.
+
+For example:
+
+```text
+User is asking about trade information
+↓
+Allowed tools:
+- get_trade
+- get_settlement_status
+- RAG search
+```
+
+I would not expose unrelated tools such as:
+
+```text
+delete_user
+send_payment
+create_admin
+```
+
+Reducing the tool set improves accuracy and also improves security.
+
+---
+
+#### 2. What if two tools have very similar functionality?
+
+I would either **combine them** or make their responsibilities very clear.
+
+For example, instead of:
+
+```text
+search_trade()
+find_trade()
+get_trade()
+```
+
+I would preferably expose one well-defined tool:
+
+```text
+get_trade(trade_id)
+```
+
+If separate tools are genuinely needed, their descriptions should clearly state when each one should be used.
+
+Overlapping tools create unnecessary ambiguity for the LLM.
+
+---
+
+#### 3. How would you measure whether tool selection improved?
+
+I would create an evaluation dataset containing:
+
+```text
+User Query
+Expected Tool
+Expected Arguments
+```
+
+For example:
+
+```text
+Query:
+"What is the settlement status of Trade 123?"
+
+Expected Tool:
+get_settlement_status
+
+Expected Argument:
+trade_id = 123
+```
+
+Then I would measure:
+
+- Tool-selection accuracy
+- Argument accuracy
+- Invalid tool-call rate
+- Tool execution failure rate
+
+I would also log production cases where the agent selected the wrong tool and add those examples to future evaluations.
+
+---
+
+#### 4. What if the correct tool is selected but wrong arguments are passed?
+
+Then I would treat it as an **argument extraction and validation problem** rather than a tool-selection problem.
+
+I would use structured schemas for tool inputs.
+
+For example:
+
+```json
+{
+  "trade_id": "string",
+  "date": "YYYY-MM-DD"
+}
+```
+
+Before executing the tool, I would validate:
+
+- Required fields
+- Data types
+- Allowed values
+- Permissions
+
+If important information is missing, I would ask for clarification instead of guessing.
+
+---
+
+### Quick Revision
+
+> Wrong tool selection is usually fixed by clearer tool descriptions, fewer overlapping tools, explicit routing, input validation, and testing tool-selection accuracy with real examples.
