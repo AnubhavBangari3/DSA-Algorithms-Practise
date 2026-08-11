@@ -768,3 +768,141 @@ So I might retrieve:
 Vector Search → Top 20
 Reranker → Best 5
 LLM → Answer
+```
+
+## Q. How would you evaluate a RAG/GenAI application and know whether it is performing well?
+
+### Interview Answer
+
+I would evaluate a RAG or GenAI application at **multiple levels**, because one overall accuracy number is usually not enough.
+
+For a RAG system, I would first separate **retrieval quality** from **generation quality**.
+
+For retrieval, I would check whether the correct document or chunk appears in the Top-K results.
+
+Typical metrics could be:
+
+- Recall@K
+- Precision@K
+- Hit Rate
+- MRR, if ranking order matters
+
+Then I would evaluate the generated answer.
+
+I would check:
+
+- Is the answer correct?
+- Is it actually supported by the retrieved context?
+- Is it relevant to the user's question?
+- Is it complete enough?
+- Did the model hallucinate anything?
+
+For this, I can use a **golden evaluation dataset** containing questions, expected answers, and expected source documents.
+
+I can run this dataset whenever I change the model, prompt, chunking, embeddings, or retrieval strategy.
+
+For large-scale evaluation, I can use an **LLM-as-a-judge** for things like faithfulness and relevance, but I would not depend on it alone. I would combine it with deterministic checks and human review.
+
+In production, I would also monitor operational metrics such as:
+
+- latency
+- token usage and cost
+- failure rate
+- fallback rate
+- user feedback
+- unanswered queries
+
+For a business-critical application, I would also track domain-specific correctness.
+
+For example, if the system extracts settlement status or trade details, I would validate those fields against the actual database.
+
+So I would say a RAG system is performing well when it has:
+
+**good retrieval + faithful answers + low hallucination + acceptable latency/cost + good user or business outcomes.**
+
+### Simple Flow
+
+Evaluation Dataset
+↓
+Test Retrieval
+↓
+Was Correct Chunk Retrieved?
+↓
+Evaluate Generated Answer
+↓
+Correctness + Faithfulness + Relevance
+↓
+Check Latency / Cost / Failures
+↓
+Human + Production Feedback
+↓
+Improve and Re-test
+
+---
+
+### Follow-up Questions
+
+#### 1. What is Recall@K?
+
+Recall@K checks whether the correct document or chunk appears within the top K retrieved results.
+
+For example, if the correct document appears within the Top 5 results, then that query is successful for Recall@5.
+
+It helps me understand whether the retriever is actually finding the required information.
+
+---
+
+#### 2. What is the difference between correctness and faithfulness?
+
+**Correctness** means the final answer is actually right.
+
+**Faithfulness** means the answer is supported by the retrieved context.
+
+For example, the model might accidentally give a correct answer from its own internal knowledge even though the retrieved documents do not support it.
+
+That answer may be correct, but it is not faithful to the RAG context.
+
+In production RAG, I want both.
+
+---
+
+#### 3. Would you use only automated evaluation?
+
+No.
+
+Automated evaluation is useful because it is fast and scalable, but I would combine it with **human review**, especially for critical use cases.
+
+I would normally use:
+
+- deterministic checks where possible
+- automated metrics
+- LLM-as-a-judge as an additional signal
+- manual review on sampled or high-risk responses
+
+This gives me a more reliable evaluation.
+
+---
+
+#### 4. How would you evaluate a GenAI application that is not using RAG?
+
+Then I would focus more on task-specific output quality.
+
+For example, I could measure:
+
+- correctness
+- relevance
+- instruction following
+- structured output validity
+- safety
+- consistency
+- user satisfaction
+
+If the application generates structured output, I can validate schema and business rules programmatically.
+
+For open-ended tasks, I would use a mix of human evaluation and LLM-based evaluation.
+
+---
+
+### Quick Revision
+
+> Evaluate RAG separately at retrieval and generation levels, then track faithfulness, correctness, hallucination, latency, cost, failures, and real business outcomes.
