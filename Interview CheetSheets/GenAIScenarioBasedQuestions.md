@@ -2215,3 +2215,200 @@ I would also preserve the current state and execution trace so I can debug the f
 
 > Use shared state and conditional branches, keep simple decisions deterministic, use the LLM only for reasoning, and add retries, fallbacks, and clear termination conditions.
 
+```
+## Q. LLM output must always follow a specific JSON/schema. How would you guarantee it?
+
+### Interview Answer
+
+If the output must always follow a specific schema, I would **not rely only on prompt instructions**.
+
+My production approach would be:
+
+**Define schema → use structured output/function calling → validate programmatically → retry or fallback if invalid.**
+
+First, I would define the expected schema clearly.
+
+For example:
+
+```json
+{
+  "trade_id": "string",
+  "status": "string",
+  "reason": "string",
+  "confidence": "number"
+}
+```
+
+Then, if the model/provider supports **structured output or function/tool calling with a schema**, I would use that instead of asking:
+
+```text
+"Please return valid JSON."
+```
+
+That gives much stronger control over the response format.
+
+After receiving the output, I would still validate it in the application.
+
+For example, in Python I could use **Pydantic** or JSON Schema validation to check:
+
+- Required fields
+- Data types
+- Allowed values
+- Missing fields
+- Extra fields if they are not allowed
+
+For example, if status must only be:
+
+```text
+PENDING
+FAILED
+SETTLED
+```
+
+I would validate that rather than accepting any random string.
+
+If validation fails, I could do one controlled retry with the validation error included.
+
+If it still fails, I would return a safe fallback instead of passing malformed data further into the system.
+
+For critical workflows, I would also validate the **business meaning**, not just the JSON structure.
+
+For example, valid JSON does not mean the information itself is correct.
+
+So my production approach is:
+
+**Structured generation + schema validation + business validation + limited retry + fallback.**
+
+### Simple Flow
+
+```text
+User/Input
+↓
+LLM with Structured Output Schema
+↓
+JSON Response
+↓
+Schema Validation
+↓
+Valid?
+├── Yes → Business Validation → Use Output
+│
+└── No → Retry Once
+            ↓
+         Still Invalid?
+            ↓
+         Fallback / Error
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. Is asking the LLM to "return JSON only" enough?
+
+No.
+
+That can work in simple cases, but it does not guarantee that the response will always be valid.
+
+The model could still return:
+
+```text
+Here is your JSON:
+
+{
+  ...
+}
+```
+
+or generate missing fields or wrong data types.
+
+So in production, I would prefer **native structured output/function calling** plus programmatic schema validation.
+
+---
+
+#### 2. What would you use in Python to validate the schema?
+
+I would commonly use **Pydantic**.
+
+For example:
+
+```python
+from pydantic import BaseModel
+from typing import Literal
+
+class TradeResult(BaseModel):
+    trade_id: str
+    status: Literal["PENDING", "FAILED", "SETTLED"]
+    reason: str
+    confidence: float
+```
+
+Then I can validate the LLM response before using it.
+
+This protects the rest of the application from malformed or unexpected output.
+
+---
+
+#### 3. What if the JSON is valid but the information inside it is wrong?
+
+Then schema validation alone is not enough.
+
+For example:
+
+```json
+{
+  "trade_id": "TR123",
+  "status": "SETTLED"
+}
+```
+
+This may be perfectly valid JSON, but the actual database may say the trade is `FAILED`.
+
+So after schema validation, I would apply **business validation**.
+
+For example:
+
+```text
+Schema Valid
+↓
+Check trade_id in database
+↓
+Verify status/source
+↓
+Accept Response
+```
+
+Structure correctness and factual correctness are two separate checks.
+
+---
+
+#### 4. What would you do if validation keeps failing?
+
+I would use a limited retry strategy.
+
+For example:
+
+```text
+LLM Output
+↓
+Validation Failed
+↓
+Retry with Validation Error
+↓
+Still Invalid
+↓
+Stop
+↓
+Fallback / Error Handling
+```
+
+I would not retry indefinitely because that increases latency and cost.
+
+I would also log these failures so I can improve the prompt, schema, or model configuration later.
+
+---
+
+### Quick Revision
+
+> Don't trust prompt-only JSON: use structured output, validate with a schema like Pydantic, validate business rules too, and retry or fallback when validation fails.
+```
