@@ -1114,3 +1114,51 @@ Complex reasoning
         ↓
 Stronger Model
 
+## Q. When would you use RAG vs fine-tuning?
+
+### Interview Answer
+
+I would choose between RAG and fine-tuning based on **what I am trying to change: the model's knowledge or its behavior**.
+
+I would use **RAG when the model needs access to external, private, or frequently changing information**.
+
+For example, if I am building an assistant that answers questions about company policies, trade data, product documentation, or support knowledge, I would use RAG.
+
+The documents can change regularly, so I can update the knowledge base without retraining the model.
+
+RAG also allows me to provide **citations and source references**, which is important for factual applications.
+
+I would use **fine-tuning when I want to change how the model behaves**, rather than continuously update its knowledge.
+
+For example, if I want the model to consistently produce a specific response format, follow a particular writing style, classify domain-specific inputs, or perform a specialized task repeatedly, fine-tuning can be useful.
+
+A simple way I remember it is:
+
+**RAG = give the model the right knowledge at runtime.**  
+**Fine-tuning = teach the model a better behavior or task pattern.**
+
+For most enterprise knowledge assistants, I would start with **RAG**, because company data changes and needs to remain traceable.
+
+If necessary, I can also combine both.
+
+For example, I could fine-tune a model for a specialized task or behavior and still use RAG to provide current business information.
+
+So they are not necessarily competing approaches.
+
+---
+
+### Simple Flow
+
+```text
+Need current/private knowledge?
+        ↓
+       RAG
+
+Need specialized behavior/style/task?
+        ↓
+   Fine-Tuning
+
+Need both?
+        ↓
+Fine-Tuned Model + RAG
+
