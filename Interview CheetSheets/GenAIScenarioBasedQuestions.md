@@ -906,3 +906,130 @@ For open-ended tasks, I would use a mix of human evaluation and LLM-based evalua
 ### Quick Revision
 
 > Evaluate RAG separately at retrieval and generation levels, then track faithfulness, correctness, hallucination, latency, cost, failures, and real business outcomes.
+
+
+## Q. LLM response is too slow. How would you reduce latency?
+
+### Interview Answer
+
+I would first identify **where the latency is coming from** instead of assuming the LLM itself is the only problem.
+
+I would break the request into stages:
+
+- API/network time
+- retrieval time
+- reranking time
+- prompt size
+- LLM generation time
+- post-processing time
+
+Then I would optimize the slowest stage.
+
+If the issue is with the **LLM call**, I would reduce the prompt size, remove unnecessary context, limit the output length, and use a faster model if the use case allows it.
+
+For RAG, I would avoid sending too many chunks to the model. I may retrieve more candidates, rerank them, and then send only the best few chunks.
+
+I would also use **streaming** so the user starts seeing the response immediately instead of waiting for the complete answer.
+
+If the same queries or retrieved results are repeated often, I would use **caching**, for example Redis, for retrieval results or final responses where appropriate.
+
+For independent operations, I can also run them **in parallel**. For example, if I need to call two independent tools or APIs, I would not call them sequentially.
+
+I would also check infrastructure factors such as region, connection pooling, autoscaling, and rate-limit queues.
+
+In production, I would monitor latency stage by stage using metrics like **p50, p95, and p99**, because average latency alone can hide slow requests.
+
+So my approach would be:
+
+**Measure first → reduce tokens/context → optimize retrieval → use faster model if needed → cache repeated work → parallelize independent operations → stream the response.**
+
+The main trade-off is that some latency improvements can reduce answer quality, so I would optimize while keeping accuracy within an acceptable level.
+
+### Simple Flow
+
+User Request
+↓
+Measure Each Stage
+↓
+Retrieval / Tools / LLM
+↓
+Reduce Context + Optimize Calls
+↓
+Cache / Parallelize Where Possible
+↓
+Stream Response
+↓
+Monitor p95 Latency
+
+---
+
+### Follow-up Questions
+
+#### 1. Would you always use a smaller model to reduce latency?
+
+No.
+
+A smaller model is usually faster and cheaper, but it may reduce reasoning or answer quality.
+
+I would first optimize things like prompt size, context size, retrieval, and unnecessary calls.
+
+If latency is still high, I would test a smaller model and compare:
+
+**accuracy vs latency vs cost**
+
+In production, I would choose the smallest model that still meets the quality requirement.
+
+---
+
+#### 2. How does reducing context improve latency?
+
+A larger context means more tokens have to be processed before the model starts generating the answer.
+
+So if I send 15 retrieved chunks when only 3 are relevant, I am increasing both latency and cost.
+
+I would retrieve enough candidates for good recall, rerank them, and then send only the most relevant chunks to the LLM.
+
+That improves both **speed and focus**.
+
+---
+
+#### 3. What would you cache in a GenAI application?
+
+I could cache different layers depending on the use case.
+
+For example:
+
+- embedding results
+- retrieval results
+- repeated API/tool responses
+- final LLM responses for identical or safe-to-reuse queries
+
+Redis can be useful for this.
+
+But I would use proper TTL and cache invalidation, especially when the underlying business data changes frequently.
+
+I would not blindly cache sensitive or highly dynamic responses.
+
+---
+
+#### 4. Does streaming actually reduce LLM processing time?
+
+Not necessarily.
+
+Streaming usually does **not significantly reduce the total generation time**.
+
+What it improves is **perceived latency**.
+
+Instead of waiting 8 seconds and then seeing the full response, the user may start seeing tokens after 1–2 seconds.
+
+So I would distinguish between:
+
+**Time to First Token** and **Total Response Time**.
+
+Both are useful production metrics.
+
+---
+
+### Quick Revision
+
+> Reduce LLM latency by measuring the bottleneck first, shrinking context and output, optimizing retrieval, caching and parallelizing work, using the right model, and streaming for faster perceived response.
