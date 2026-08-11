@@ -559,3 +559,87 @@ For example, if I have a settlement guide:
 2. Settlement Instructions
 3. Failure Handling
 4. Reconciliation
+
+## Q. How would you prevent the LLM from answering when the required information isn't available?
+
+### Interview Answer
+
+I would prevent guessing by adding a **confidence and evidence check before generation**.
+
+In a RAG system, I would first retrieve the relevant chunks and check whether the retrieval score is good enough and whether the required information is actually present in the context.
+
+If the evidence is weak or missing, I would **not call the LLM for a normal answer**. I would return a controlled fallback such as:
+
+> "I don't have enough information in the available documents to answer this reliably."
+
+I would also add a strict instruction in the prompt like:
+
+> Answer only from the provided context. If the answer is not present, return `INSUFFICIENT_INFORMATION`.
+
+For important use cases, I would not rely only on the prompt. I would also validate the output programmatically.
+
+For example, if I expect an answer with a source citation, I can check whether the cited source actually contains the supporting information.
+
+So in production, I would use multiple layers:
+
+- Retrieval confidence threshold
+- Strict grounding prompt
+- Structured fallback response
+- Source/citation validation
+- Human review for critical cases
+
+The important point is that **the system should be allowed to say "I don't know."**
+
+That is much safer than forcing the LLM to always produce an answer.
+
+### Simple Flow
+
+User Query
+↓
+Retrieve Relevant Context
+↓
+Is Evidence Strong Enough?
+↓
+No → Return Safe Fallback
+↓
+Yes
+↓
+LLM Answers Only From Context
+↓
+Validate Source / Output
+↓
+Final Response
+
+---
+
+### Follow-up Questions
+
+#### 1. Would you rely only on a similarity-score threshold?
+
+No.
+
+A similarity score is useful, but I would not use it as the only decision factor because a high similarity score does not always mean the chunk contains the exact answer.
+
+I would combine it with things like:
+
+- reranking score
+- presence of required information
+- metadata filters
+- answer/source validation
+
+The threshold should also be tuned using an evaluation dataset rather than chosen randomly.
+
+---
+
+#### 2. What if the LLM ignores the instruction and still answers?
+
+Then I would add **application-level validation** instead of trusting the prompt alone.
+
+For example, I can require structured output such as:
+
+```json
+{
+  "answerable": false,
+  "answer": null
+}
+
