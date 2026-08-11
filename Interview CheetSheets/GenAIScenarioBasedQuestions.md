@@ -271,3 +271,127 @@ So the validation strategy depends on whether the task is **factual, structured,
 ### Quick Revision
 
 > Verify LLM responses using trusted sources, deterministic business checks, golden datasets, faithfulness evaluation, and human review for critical cases.
+
+## Q. RAG is retrieving irrelevant documents. How would you improve it?
+
+### Interview Answer
+
+If RAG is retrieving irrelevant documents, I would treat it primarily as a **retrieval problem** and debug the pipeline step by step.
+
+First, I would check whether the issue is with the **data or chunking**.
+
+If chunks are too large, they may contain too much unrelated information. If they are too small, they may lose important context. So I would test a better chunk size and overlap based on the document type.
+
+Second, I would check the **embedding model**. The embedding model should match the type of data and queries I have. If semantic similarity is poor, even good documents may rank incorrectly.
+
+Third, I would tune **Top-K retrieval**. If I retrieve too many chunks, I may send noisy context to the LLM. If I retrieve too few, I may miss the correct answer.
+
+Then I would add **metadata filtering** where possible.
+
+For example, if the user asks about settlement messages, I can filter by document type, client, date, module, or message category before vector search.
+
+If pure vector search is still weak, I would use **hybrid search**, combining semantic search with keyword/BM25 search. This is especially useful for exact terms like trade IDs, product names, error codes, or SWIFT message types.
+
+After retrieval, I would add a **reranker** so that the initially retrieved chunks are reordered based on how relevant they are to the exact query.
+
+I would also test **query rewriting** if user queries are short or ambiguous.
+
+Finally, I would evaluate retrieval separately using a dataset where I know which document should be retrieved for each question.
+
+So my production approach would be:
+
+**Fix chunking → check embeddings → tune Top-K → use metadata filters → hybrid search → rerank → evaluate retrieval quality.**
+
+### Simple Flow
+
+User Query
+↓
+Query Rewrite if Needed
+↓
+Metadata Filter
+↓
+Hybrid / Vector Search
+↓
+Top-K Candidates
+↓
+Reranker
+↓
+Best Relevant Chunks
+↓
+LLM
+
+---
+
+### Follow-up Questions
+
+#### 1. How would you know whether the problem is retrieval or generation?
+
+I would inspect the retrieved chunks before looking at the final LLM answer.
+
+If the correct information is **not present in the retrieved context**, then it is a retrieval problem.
+
+If the correct information is already present but the LLM still gives the wrong answer, then it is mainly a generation or prompt problem.
+
+So I always evaluate retrieval independently from generation.
+
+---
+
+#### 2. What is hybrid search and why would you use it?
+
+Hybrid search combines:
+
+- **Semantic/vector search** for meaning
+- **Keyword/BM25 search** for exact text matches
+
+I would use it when the knowledge base contains both natural-language information and exact identifiers.
+
+For example, vector search may understand:
+
+`Why did this settlement fail?`
+
+But keyword search may be better for:
+
+`MT548`, `Trade12345`, or a specific error code.
+
+Combining both usually gives more reliable retrieval.
+
+---
+
+#### 3. What is reranking?
+
+Reranking means I first retrieve a larger set of candidate chunks and then use a stronger relevance model to reorder them.
+
+For example:
+
+Vector Search → Top 20 chunks  
+Reranker → Best 5 chunks
+
+The first retrieval stage is fast, while the reranker is more accurate but more expensive.
+
+So in production, I would use reranking when retrieval quality is important enough to justify the additional latency and cost.
+
+---
+
+#### 4. How would you choose the right chunk size?
+
+I would not choose chunk size randomly.
+
+I would start based on the document structure and then evaluate it using real questions.
+
+For example, a FAQ may work well with smaller chunks, while technical documentation may need larger chunks so related information stays together.
+
+I would test:
+
+- different chunk sizes
+- different overlaps
+- semantic or heading-based chunking
+
+Then I would measure whether the expected chunk appears in the top retrieval results.
+
+The correct chunk size is the one that gives the best retrieval quality for my data, not simply the largest or smallest value.
+
+---
+
+### Quick Revision
+
+> Irrelevant RAG retrieval = check chunking and embeddings first, then tune Top-K, filters, hybrid search, reranking, and evaluate retrieval separately.
