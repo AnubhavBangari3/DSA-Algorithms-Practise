@@ -1033,3 +1033,84 @@ Both are useful production metrics.
 ### Quick Revision
 
 > Reduce LLM latency by measuring the bottleneck first, shrinking context and output, optimizing retrieval, caching and parallelizing work, using the right model, and streaming for faster perceived response.
+
+## Q. GenAI/LLM API cost is becoming too high. How would you optimize it?
+
+### Interview Answer
+
+First, I would identify **where the cost is coming from** instead of immediately switching models.
+
+I would track things like:
+
+- Number of LLM calls per request
+- Input and output tokens
+- Model being used
+- RAG context size
+- Repeated queries
+- Agent/tool loops
+
+Usually, the biggest optimization is to **avoid unnecessary LLM calls and unnecessary tokens**.
+
+First, I would reduce the prompt and context size. In RAG, instead of sending many retrieved chunks, I would rerank them and send only the most relevant ones.
+
+Second, I would use **model routing**.
+
+Not every task needs the most powerful model. For example, simple classification, extraction, or summarization can use a smaller and cheaper model, while complex reasoning can go to a stronger model.
+
+Third, I would add **caching** for repeated or reusable results. For example, embeddings, retrieval results, tool/API results, or safe repeated LLM responses can be cached using Redis.
+
+I would also check whether my application is making duplicate calls. In an agentic system, poorly controlled retries or loops can generate a lot of unnecessary API usage, so I would set retry limits and termination conditions.
+
+I would also limit output tokens. If the application only needs a short answer or structured JSON, I would not allow the model to generate a very long response.
+
+For large offline workloads, if the provider supports batch processing at a lower cost, I would consider that as well.
+
+Finally, I would monitor metrics like:
+
+**cost per request, tokens per request, cost per user, and cost per successful task.**
+
+My goal would not simply be to use the cheapest model. It would be to get the **required accuracy at the lowest reasonable cost**.
+
+### Simple Flow
+
+User Request
+↓
+Can Cache Answer?
+↓
+Yes → Return Cached Result
+↓
+No
+↓
+Choose Appropriate Model
+↓
+Retrieve Only Relevant Context
+↓
+LLM with Token Limits
+↓
+Return Response
+↓
+Track Cost + Quality
+
+---
+
+### Follow-up Questions
+
+#### 1. Would you always switch to a smaller model to reduce cost?
+
+No.
+
+A smaller model may reduce cost, but it can also reduce accuracy.
+
+I would use **model routing** instead.
+
+For example:
+
+```text
+Simple extraction/classification
+        ↓
+Small Model
+
+Complex reasoning
+        ↓
+Stronger Model
+
