@@ -1792,3 +1792,221 @@ I would also add real production failures to this dataset so the evaluation keep
 > Fix wrong tool selection by making tool boundaries clear, reducing overlapping tools, restricting the available tool set, validating arguments, and testing against real tool-routing examples.
 
 ```
+
+## Q. Agent gets stuck in a loop or repeatedly calls tools. How would you handle it?
+
+### Interview Answer
+
+If an agent gets stuck in a loop, I would first identify **why it keeps repeating the same action**.
+
+Common reasons could be:
+
+- No clear termination condition.
+- The tool keeps failing and the agent keeps retrying.
+- The agent is not maintaining state properly.
+- The tool result is unclear, so the agent thinks it needs to call it again.
+- There is no maximum step or retry limit.
+
+First, I would define **clear termination conditions**.
+
+The agent should know exactly when the task is successful, when it has failed, and when it should stop.
+
+Second, I would add hard safety limits such as:
+
+```text
+Maximum agent steps = 10
+Maximum retries per tool = 2
+Tool timeout = 10 seconds
+Overall workflow timeout = 30 seconds
+```
+
+These values would be tuned for the actual use case.
+
+Third, I would maintain **state and tool-call history**.
+
+Before calling a tool, the agent can check whether the same tool has already been called with the same arguments and whether anything has changed.
+
+For example:
+
+```text
+get_trade_status(trade_id=123)
+↓
+Already called with same input
+↓
+No new information available
+↓
+Do not call again
+```
+
+For tool failures, I would use controlled retries, preferably with **backoff** for temporary failures.
+
+If the same tool keeps failing, I would stop retrying and use a fallback instead of allowing an infinite loop.
+
+For example:
+
+```text
+API fails
+↓
+Retry 1
+↓
+Retry 2
+↓
+Still fails
+↓
+Stop → Fallback / Human Review
+```
+
+I would also log the full agent trace — tool calls, arguments, results, retries, and termination reason — so I can understand why loops are happening in production.
+
+So my production approach would be:
+
+**Clear termination conditions → step limits → retry limits → state/history → duplicate-call detection → timeout → fallback.**
+
+### Simple Flow
+
+```text
+Agent Starts
+↓
+Choose Action
+↓
+Has Same Action Already Been Tried?
+↓
+Yes → Re-evaluate / Choose Another Action
+↓
+No
+↓
+Execute Tool
+↓
+Success?
+├── Yes → Update State → Goal Completed?
+│                         ├── Yes → STOP
+│                         └── No → Next Step
+│
+└── No → Retry Limit Reached?
+          ├── No → Retry with Backoff
+          └── Yes → Fallback / Human Review
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. What is a termination condition in an AI Agent?
+
+A termination condition defines **when the agent should stop executing**.
+
+For example:
+
+```text
+Goal:
+Investigate failed trade and create ticket.
+
+Termination conditions:
+
+Success:
+RCA generated AND ticket created
+
+Failure:
+Required trade information unavailable
+
+Safety:
+Maximum 10 agent steps reached
+```
+
+Without clear termination conditions, the model may continue trying different actions even though the workflow is already finished or cannot be completed.
+
+---
+
+#### 2. How would you detect repeated tool calls?
+
+I would maintain the **tool-call history in the agent state**.
+
+For example:
+
+```json
+{
+  "tool": "get_trade_status",
+  "arguments": {
+    "trade_id": "123"
+  },
+  "result": "FAILED"
+}
+```
+
+Before executing another call, I can check:
+
+```text
+Same Tool + Same Arguments + No State Change?
+↓
+Yes
+↓
+Don't Execute Again
+```
+
+The agent can then choose another action or terminate.
+
+This also saves latency and LLM/tool cost.
+
+---
+
+#### 3. When should an Agent retry a failed tool?
+
+I would retry mainly for **temporary failures**.
+
+For example:
+
+```text
+Timeout
+503 Service Unavailable
+Temporary network failure
+Rate limit
+```
+
+I could retry these with controlled backoff.
+
+But if the error is permanent, such as:
+
+```text
+Invalid trade ID
+Permission denied
+Invalid request
+```
+
+repeating the same call will not help.
+
+I would stop and either request corrected information or return a controlled failure.
+
+---
+
+#### 4. What would you do if the maximum agent steps are reached?
+
+I would immediately terminate the workflow instead of allowing additional execution.
+
+Then depending on the use case, I could:
+
+- Return a safe fallback.
+- Ask the user for additional information.
+- Escalate to human review.
+- Store the execution trace for debugging.
+
+For example:
+
+```text
+Maximum Steps Reached
+↓
+Stop Agent
+↓
+Save Trace
+↓
+Fallback / Human Review
+```
+
+I would never let the agent continue indefinitely because that can create **high cost, latency, and potentially unsafe actions**.
+
+---
+
+### Quick Revision
+
+> Prevent agent loops using clear termination conditions, state and tool history, duplicate-call detection, retry and step limits, timeouts, and a safe fallback.
+
+```
