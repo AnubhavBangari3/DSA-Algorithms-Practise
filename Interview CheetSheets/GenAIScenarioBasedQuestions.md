@@ -3235,3 +3235,187 @@ This improves scalability and makes failures and retries easier to manage.
 ### Quick Revision
 
 > Scale GenAI/RAG with stateless horizontally scaled APIs, load balancing, caching, scalable vector search, background workers, controlled LLM concurrency, and monitoring of latency, queues, rate limits, and cost.
+
+
+## Q. Model worked well earlier but quality dropped after changes. What do you check?
+
+### Interview Answer
+
+If quality dropped after a change, I would treat it as a **regression problem** and compare the current version with the last known good version.
+
+First, I would identify **what changed**.
+
+For example:
+
+- LLM model or model version
+- System prompt
+- Temperature or generation settings
+- Embedding model
+- Chunk size or overlap
+- Retrieval Top-K
+- Reranker
+- Knowledge-base documents
+- Tool descriptions
+- Application code
+
+Then I would use the same **golden evaluation dataset** on both versions.
+
+This tells me whether the drop is happening in:
+
+- Retrieval
+- Generation
+- Tool selection
+- Structured output
+- Overall answer quality
+
+For a RAG system, I would check retrieval first.
+
+If the correct document used to appear in Top-K but no longer does, I would investigate chunking, embeddings, indexing, metadata filters, or reranking.
+
+If retrieval is still correct but the answer quality dropped, I would compare the prompt, context sent to the model, generation settings, and model version.
+
+I would also check whether the underlying data changed. Sometimes the code is fine, but outdated, duplicate, or incorrectly indexed documents enter the knowledge base.
+
+In production, I would avoid making GenAI changes without versioning. I would version prompts, models, retrieval configuration, and evaluation results so I can quickly identify which change introduced the regression.
+
+If the impact is significant, I would **roll back to the last stable version** while I investigate.
+
+So my approach would be:
+
+**Identify changes → reproduce with evaluation dataset → isolate retrieval vs generation → compare with baseline → rollback if necessary → fix and re-evaluate.**
+
+### Simple Flow
+
+```text
+Quality Drop Detected
+↓
+What Changed?
+↓
+Run Old + New Version on Same Eval Dataset
+↓
+Compare Results
+↓
+Where Did Quality Drop?
+├── Retrieval → Check chunks / embeddings / Top-K / index
+├── Generation → Check prompt / model / settings / context
+├── Data → Check document/version changes
+└── Agent → Check tools / routing / state
+↓
+Fix or Roll Back
+↓
+Run Regression Evaluation Again
+↓
+Deploy
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. What is regression testing in a GenAI application?
+
+Regression testing means checking whether a new change has **broken something that was working correctly earlier**.
+
+I would maintain a fixed evaluation dataset like:
+
+```text
+Question
+Expected Answer
+Expected Source
+Expected Tool if applicable
+```
+
+Before deploying a change, I would run both the old and new versions against the same dataset.
+
+For example:
+
+```text
+Old Version Accuracy = 91%
+New Version Accuracy = 83%
+```
+
+That immediately tells me the change introduced a regression.
+
+---
+
+#### 2. What if you changed multiple things at the same time?
+
+That makes debugging harder.
+
+I would try to isolate the variables and test them independently.
+
+For example:
+
+```text
+Baseline
+↓
+Change Prompt Only
+↓
+Evaluate
+
+Baseline
+↓
+Change Embedding Model Only
+↓
+Evaluate
+
+Baseline
+↓
+Change Chunking Only
+↓
+Evaluate
+```
+
+This is similar to controlled experimentation.
+
+In production, I would prefer smaller, versioned changes instead of changing the model, prompt, retrieval, and chunking all at once.
+
+---
+
+#### 3. What if the LLM provider silently changed the model behavior?
+
+That is why I would not rely only on a model name.
+
+I would monitor output quality continuously using regression tests and production metrics.
+
+Where supported, I would also pin a specific model/version rather than automatically moving to a new one.
+
+If a provider-side change causes quality degradation, I could temporarily:
+
+```text
+Roll back / pin previous version
+↓
+Test alternative model
+↓
+Re-tune prompt if required
+```
+
+The key is to detect the change through evaluation instead of waiting for users to report it.
+
+---
+
+#### 4. What production metrics would help detect quality regression?
+
+I would monitor both technical and quality signals.
+
+For example:
+
+- Retrieval success / Recall@K
+- Faithfulness
+- Correctness on evaluation dataset
+- Fallback rate
+- Invalid structured-output rate
+- Tool-call failure rate
+- User negative feedback
+- Latency and error rate
+
+I would compare these metrics across model, prompt, and application versions.
+
+If a new release suddenly increases fallback or incorrect-answer rates, I can quickly investigate that deployment.
+
+---
+
+### Quick Revision
+
+> If quality suddenly drops, treat it as a regression: compare old vs new on the same evaluation set, isolate what changed, check retrieval and generation separately, and roll back if needed.
+
