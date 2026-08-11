@@ -643,3 +643,128 @@ For example, I can require structured output such as:
   "answerable": false,
   "answer": null
 }
+
+```
+
+## Q. How would you improve the accuracy of a production RAG system?
+
+### Interview Answer
+
+I would improve RAG accuracy by optimizing the pipeline in stages instead of only changing the LLM.
+
+First, I would check **data quality**.
+
+The knowledge base should contain correct, updated, non-duplicate documents with proper metadata. If the source data is poor, the final answer will also be poor.
+
+Second, I would improve **chunking** based on the document type. I would use logical or heading-based chunks where possible and tune chunk size and overlap using real queries.
+
+Third, I would improve **retrieval quality**.
+
+I would check:
+- embedding model
+- Top-K value
+- metadata filters
+- hybrid search
+- query rewriting
+- reranking
+
+For production, I would usually prefer **hybrid search + reranking** when the data contains both semantic content and exact keywords or IDs.
+
+Then I would improve the **generation layer**.
+
+I would give the LLM only the most relevant context and use a grounding prompt such as:
+
+> Answer only from the provided context. If the answer is unavailable, say so.
+
+I would also keep temperature low for factual use cases.
+
+After that, I would add **validation and fallback**.
+
+For critical fields, I can validate the answer against a database, API, business rule, or source document. If retrieval confidence is too low, I would return a safe fallback instead of allowing the model to guess.
+
+Finally, I would create an **evaluation dataset** and measure retrieval and generation separately.
+
+For example:
+
+- Did the correct document appear in Top-K?
+- Was the answer supported by the context?
+- Was the final answer correct?
+- How often did the system return unsupported answers?
+
+So my production approach would be:
+
+**Improve data → improve chunking → improve retrieval → rerank → ground the LLM → validate → continuously evaluate.**
+
+### Simple Flow
+
+User Query
+↓
+Query Processing
+↓
+Metadata Filter / Hybrid Search
+↓
+Top-K Results
+↓
+Reranker
+↓
+Best Context
+↓
+Grounded LLM
+↓
+Validation
+↓
+Final Answer / Safe Fallback
+
+---
+
+### Follow-up Questions
+
+#### 1. What would you improve first: the model or retrieval?
+
+I would usually improve **retrieval first**.
+
+If the LLM does not receive the correct information, even a stronger model may still give the wrong answer.
+
+So I would first check:
+
+**Did we retrieve the correct document and chunk?**
+
+Only after retrieval is working properly would I consider changing the LLM.
+
+This is also usually more cost-effective than immediately moving to a larger model.
+
+---
+
+#### 2. How would you measure whether the RAG system actually improved?
+
+I would maintain a **golden evaluation dataset** with known questions, expected answers, and expected source documents.
+
+Then I would measure retrieval and generation separately.
+
+For retrieval, I could check:
+
+- Recall@K
+- whether the correct chunk appears in Top-K
+
+For generation, I would check:
+
+- answer correctness
+- faithfulness
+- unsupported answer rate
+
+I would also monitor real production feedback and failed queries.
+
+This lets me compare the system before and after every change.
+
+---
+
+#### 3. Why would you use reranking if vector search already works?
+
+Vector search is good for quickly finding semantically similar documents, but the highest similarity result is not always the most relevant one.
+
+So I might retrieve:
+
+```text
+Vector Search → Top 20
+Reranker → Best 5
+LLM → Answer
