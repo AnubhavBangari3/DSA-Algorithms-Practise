@@ -3419,3 +3419,188 @@ If a new release suddenly increases fallback or incorrect-answer rates, I can qu
 
 > If quality suddenly drops, treat it as a regression: compare old vs new on the same evaluation set, isolate what changed, check retrieval and generation separately, and roll back if needed.
 
+## Q. How would you handle a high-risk GenAI decision?
+
+### Interview Answer
+
+For a **high-risk decision, I would not allow the LLM to be the final decision-maker**.
+
+I would use the LLM mainly for analysis, extraction, summarization, or recommendation, and put deterministic controls or human approval before the final action.
+
+First, I would identify what makes the decision high-risk.
+
+For example:
+
+- Financial transaction
+- Legal or compliance decision
+- Access to sensitive data
+- Deleting or modifying production data
+- High-impact business action
+
+Then I would ground the LLM using trusted data and validate important facts against authoritative sources such as a database, API, or approved documents.
+
+Where possible, I would use **deterministic business rules** for the actual decision.
+
+For example:
+
+```python
+if transaction_amount > approval_limit:
+    require_human_approval = True
+```
+
+I would not ask the LLM to decide whether a known approval threshold applies.
+
+If AI reasoning is required, I would have the model provide:
+
+```text
+Recommendation
+Reason
+Supporting evidence
+```
+
+rather than immediately executing the action.
+
+Then I would add **human-in-the-loop approval** for critical actions.
+
+For example, if an agent identifies that a settlement instruction needs modification, it could prepare the recommended action, but an authorized operations user would approve it before execution.
+
+I would also enforce authentication, authorization, tool permissions, and input/output validation outside the LLM.
+
+Finally, I would maintain an **audit trail** containing the input, evidence used, AI recommendation, validation results, human approval, and final action.
+
+So my production approach would be:
+
+**Trusted evidence → AI recommendation → deterministic validation → human approval when required → controlled execution → audit trail.**
+
+### Simple Flow
+
+```text
+User / Business Request
+↓
+Retrieve Trusted Information
+↓
+LLM Analysis / Recommendation
+↓
+Validate Facts + Business Rules
+↓
+High-Risk Action?
+├── No → Continue Normally
+│
+└── Yes
+      ↓
+Human Approval
+      ↓
+Approved?
+├── Yes → Execute Authorized Action
+└── No  → Stop
+      ↓
+Audit Everything
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. What is human-in-the-loop?
+
+Human-in-the-loop means the AI can assist with the decision, but an **authorized human reviews or approves important actions before execution**.
+
+For example:
+
+```text
+AI detects settlement issue
+↓
+AI generates RCA
+↓
+AI recommends changing SSI
+↓
+Operations User Reviews
+↓
+Approve / Reject
+↓
+System Executes Only if Approved
+```
+
+This is useful when an incorrect AI decision could have significant financial, legal, compliance, or operational impact.
+
+---
+
+#### 2. Would you use a confidence score to automatically approve high-risk decisions?
+
+I would be careful with that.
+
+A high confidence score does not necessarily mean the answer is correct.
+
+For high-risk decisions, I would prefer:
+
+```text
+Confidence
++
+Source evidence
++
+Deterministic validation
++
+Business rules
++
+Human approval where required
+```
+
+Confidence can help decide which cases need additional review, but I would not treat the LLM's self-reported confidence as proof of correctness.
+
+---
+
+#### 3. What should be included in the audit trail?
+
+I would record enough information to understand **why the decision happened**.
+
+For example:
+
+```text
+Request ID
+User / system initiating request
+Input
+Retrieved sources
+Model/version
+AI recommendation
+Tool calls
+Validation results
+Human approval/rejection
+Final action
+Timestamp
+```
+
+For sensitive data, I would make sure the logs themselves follow access-control and data-retention policies.
+
+This helps with debugging, compliance, and investigation.
+
+---
+
+#### 4. What if a human approves an incorrect AI recommendation?
+
+Human approval is an important safety layer, but it does not guarantee correctness.
+
+I would still use multiple controls:
+
+```text
+Trusted Data
+↓
+AI Recommendation
+↓
+Deterministic Business Validation
+↓
+Human Approval
+↓
+Permission Check
+↓
+Execute
+```
+
+For example, even if someone approves a transaction, the backend should still reject it if it violates a hard business rule or the user does not have permission.
+
+So I would use **defense in depth**, rather than depending on either the LLM or the human alone.
+
+---
+
+### Quick Revision
+
+> For high-risk GenAI decisions, let AI recommend rather than decide: validate against trusted data and business rules, require human approval where needed, restrict execution permissions, and audit everything.
