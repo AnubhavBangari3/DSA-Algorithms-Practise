@@ -2787,3 +2787,215 @@ Prompt filtering is useful as another layer, not the complete solution.
 
 > Prevent prompt injection by treating all external content as untrusted, keeping security controls outside the LLM, restricting tools and permissions, protecting secrets, and validating every sensitive action.
 
+## Q. How would you securely use sensitive company data with an LLM?
+
+### Interview Answer
+
+I would start with one principle: **sensitive company data should only be sent to an LLM if it is actually needed, and only through an approved enterprise setup.**
+
+First, I would classify the data.
+
+For example:
+
+- Public data
+- Internal data
+- Confidential data
+- PII or financial data
+- Highly restricted data
+
+Based on the classification, I would decide whether that data is allowed to be used with the LLM at all.
+
+Second, I would use an **enterprise/private LLM deployment or approved provider configuration** where the company has proper controls around data handling, retention, and access.
+
+Third, I would minimize the data before sending it.
+
+For example, if the LLM only needs the settlement failure reason, I would not send the full customer record.
+
+I would use:
+
+- Masking
+- Redaction
+- Tokenization
+- PII removal
+- Field-level filtering
+
+where appropriate.
+
+For a RAG application, I would also enforce **access control before retrieval**.
+
+For example:
+
+```text
+User A can access Client X documents
+User B cannot
+```
+
+The vector/search layer should respect those permissions so unauthorized documents never reach the LLM.
+
+I would also avoid putting secrets such as:
+
+```text
+API keys
+Passwords
+Database credentials
+Access tokens
+```
+
+inside prompts.
+
+Secrets should remain in a secure secret manager and only be used by backend services.
+
+For agentic systems, I would also apply **least privilege** to tools. The LLM should only be able to access the minimum data and actions required for the current task.
+
+Finally, I would keep audit logs showing:
+
+- Who requested the data
+- What source was accessed
+- Which tool was called
+- Whether sensitive information was sent
+- Whether the action was allowed or blocked
+
+So my production approach would be:
+
+**Classify data → minimize/redact it → enforce access before retrieval → use an approved private/enterprise LLM setup → protect secrets → audit everything.**
+
+### Simple Flow
+
+```text
+User Request
+↓
+Authenticate User
+↓
+Check Authorization
+↓
+Retrieve Only Allowed Data
+↓
+Redact / Minimize Sensitive Fields
+↓
+Approved LLM
+↓
+Validate Output
+↓
+Return Response
+↓
+Audit Log
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. Would you send PII directly to the LLM?
+
+Only if the use case genuinely requires it and the company's security and compliance policy explicitly allows it.
+
+Otherwise, I would remove or mask it.
+
+For example:
+
+```text
+Before:
+
+Customer: Anubhav Bangari
+Account: 123456789
+Issue: Settlement failure
+```
+
+I could send:
+
+```text
+Customer: CUSTOMER_001
+Account: ACCOUNT_001
+Issue: Settlement failure
+```
+
+The LLM usually does not need the real identity to analyze the issue.
+
+The principle is:
+
+**Send the minimum data required for the task.**
+
+---
+
+#### 2. How would you secure sensitive data in a RAG system?
+
+I would apply permissions **before retrieval**, not after the LLM generates an answer.
+
+For example, I could store metadata like:
+
+```text
+client = "Client_A"
+department = "Settlement"
+classification = "Confidential"
+```
+
+Then retrieval would include authorization filters:
+
+```text
+User permissions
+↓
+Metadata filter
+↓
+Vector/Hybrid Search
+↓
+Only authorized chunks
+```
+
+This prevents confidential documents from entering the LLM context in the first place.
+
+---
+
+#### 3. What if the LLM provider says they do not train on my data? Is that enough?
+
+It is important, but I would still check the complete enterprise security requirements.
+
+I would consider things like:
+
+- Data retention
+- Region/data residency
+- Encryption
+- Access controls
+- Logging
+- Compliance requirements
+- Contractual terms
+
+So "not used for training" is only one part of the security decision.
+
+The provider and deployment still need to match the company's security and compliance policies.
+
+---
+
+#### 4. How would you prevent sensitive data from leaking in the LLM response?
+
+I would validate the output before returning it.
+
+For example, I could scan the generated response for:
+
+- PII
+- Account numbers
+- Secrets
+- Restricted identifiers
+
+I would also make sure retrieval already follows user permissions.
+
+For high-risk applications, I could add a final policy or DLP check:
+
+```text
+LLM Response
+↓
+Sensitive Data / DLP Validation
+↓
+Safe?
+├── Yes → Return
+└── No  → Redact / Block
+```
+
+So protection should exist on both sides:
+
+**Input protection + output protection.**
+
+---
+
+### Quick Revision
+
+> Secure company data by minimizing what you send, enforcing access before retrieval, using an approved enterprise LLM setup, protecting secrets, validating outputs, and keeping full audit logs.
