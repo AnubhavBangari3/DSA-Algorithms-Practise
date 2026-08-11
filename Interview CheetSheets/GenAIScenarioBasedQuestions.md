@@ -519,3 +519,43 @@ At that point, I would test:
 ### Quick Revision
 
 > If the answer exists but RAG is wrong, check in order: retrieval, chunk context, prompt, context noise, generation, then validate against the source.
+
+## Q. How would you choose chunk size, overlap and chunking strategy?
+
+### Interview Answer
+
+I would choose chunking based on the **type of document and how users ask questions**, not by using one fixed size everywhere.
+
+First, I would look at the document structure.
+
+For example:
+- FAQs or short knowledge articles can use smaller chunks.
+- Technical documents or policies may need larger chunks so related information stays together.
+- Structured documents with headings are usually better split by section or heading instead of only by character count.
+
+For **chunk size**, I would start with a reasonable range and test it against real queries.
+
+If chunks are too small, important context can get separated.
+
+If chunks are too large, retrieval becomes less precise because one chunk may contain multiple unrelated topics.
+
+For **overlap**, I use enough overlap to avoid losing information at chunk boundaries, but not too much because excessive overlap creates duplicate retrieval and increases storage and token cost.
+
+For example, I may start with something like:
+
+`500–800 tokens per chunk`  
+`50–100 tokens overlap`
+
+But I would treat these only as starting values, not fixed rules.
+
+For the strategy itself, my production preference would usually be:
+
+**Structure-aware or semantic chunking first, fixed-size chunking as a fallback.**
+
+For example, if I have a settlement guide:
+
+```text
+1. Trade Matching
+2. Settlement Instructions
+3. Failure Handling
+4. Reconciliation
