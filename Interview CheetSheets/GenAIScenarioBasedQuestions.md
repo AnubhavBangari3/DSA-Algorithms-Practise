@@ -2412,3 +2412,192 @@ I would also log these failures so I can improve the prompt, schema, or model co
 
 > Don't trust prompt-only JSON: use structured output, validate with a schema like Pydantic, validate business rules too, and retry or fallback when validation fails.
 ```
+
+## Q. LLM API fails or becomes unavailable. How would you design the application?
+
+### Interview Answer
+
+I would design the application so that an LLM failure does **not crash the whole user flow**.
+
+First, I would classify the failure.
+
+It could be:
+
+- Timeout
+- Rate limit
+- Temporary provider issue
+- Authentication/configuration issue
+- Invalid request
+- Complete provider outage
+
+For temporary failures, I would use **limited retries with exponential backoff**.
+
+For example:
+
+```text
+Attempt 1
+↓
+Wait briefly
+↓
+Attempt 2
+↓
+Wait longer
+↓
+Attempt 3
+```
+
+But I would not retry every error.
+
+For something like invalid credentials or a bad request, retrying will not help.
+
+Second, I would add **timeouts** so one slow LLM call does not block the request indefinitely.
+
+Then I would add a **fallback strategy**.
+
+Depending on the application, this could mean:
+
+- Use another configured model/provider
+- Use a smaller backup model
+- Return a cached response
+- Return retrieved documents without LLM generation
+- Give a controlled message saying the AI service is temporarily unavailable
+
+For example, in a RAG application, even if generation fails, I may still be able to show the user the most relevant source documents.
+
+For critical workflows, I would also make sure that the system can continue using **normal business logic** where possible instead of depending on the LLM for everything.
+
+I would add a **circuit breaker** as well. If the LLM provider is continuously failing, I would temporarily stop sending new requests to it instead of repeatedly wasting time and resources.
+
+Finally, I would monitor:
+
+- LLM error rate
+- Timeout rate
+- Retry count
+- Provider availability
+- Fallback usage
+- Latency
+
+So my production approach would be:
+
+**Timeout → controlled retry → fallback → circuit breaker → monitoring.**
+
+The main idea is to design the LLM as one dependency of the system, not as a single point of failure.
+
+### Simple Flow
+
+```text
+User Request
+↓
+Call LLM
+↓
+Success?
+├── Yes → Validate → Return Response
+│
+└── No
+     ↓
+Temporary Error?
+├── Yes → Retry with Backoff
+│           ↓
+│        Still Fails?
+│           ↓
+│        Fallback Model / Cached Result
+│
+└── No → Controlled Fallback
+             ↓
+       Log + Monitor Failure
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. What is exponential backoff?
+
+Exponential backoff means increasing the delay between retries instead of retrying immediately.
+
+For example:
+
+```text
+First failure  → wait 1 second
+Second failure → wait 2 seconds
+Third failure  → wait 4 seconds
+```
+
+I would normally also add some randomness, or **jitter**, so many application instances do not retry at exactly the same time.
+
+This is useful for temporary failures such as rate limits or service overload.
+
+---
+
+#### 2. What is a circuit breaker?
+
+A circuit breaker prevents the application from repeatedly calling a dependency that is already failing.
+
+For example:
+
+```text
+LLM failures cross threshold
+↓
+Circuit Opens
+↓
+Stop calling provider temporarily
+↓
+Use fallback
+↓
+After some time, test provider again
+↓
+Healthy → Resume normal calls
+```
+
+This protects the application from increased latency and unnecessary retries during an outage.
+
+---
+
+#### 3. Would you always switch to another LLM provider as a fallback?
+
+No.
+
+A second provider can improve availability, but it also introduces complexity.
+
+Different models may have:
+
+- Different output formats
+- Different capabilities
+- Different prompts
+- Different tool-calling behavior
+- Different cost
+
+So I would use multi-provider fallback only when the business availability requirement justifies it.
+
+For a less critical application, a controlled error message or cached response may be enough.
+
+---
+
+#### 4. What if an LLM fails in the middle of an Agent workflow?
+
+I would persist the current **agent state** so I do not lose all previous work.
+
+For example:
+
+```json
+{
+  "trade_id": "TR123",
+  "status_checked": true,
+  "failure_reason_found": true,
+  "ticket_created": false
+}
+```
+
+Then I could retry only the failed step instead of restarting the complete workflow.
+
+I would also define retry limits and a fallback path.
+
+For sensitive or important workflows, if the AI step cannot recover, I would send it for **human review** rather than continuing with an uncertain decision.
+
+---
+
+### Quick Revision
+
+> Treat the LLM as a dependency, not a single point of failure: use timeouts, limited retries with backoff, fallbacks, circuit breakers, state recovery, and monitoring.
+
+```
