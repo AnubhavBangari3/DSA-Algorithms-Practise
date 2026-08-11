@@ -559,6 +559,7 @@ For example, if I have a settlement guide:
 2. Settlement Instructions
 3. Failure Handling
 4. Reconciliation
+```
 
 ## Q. How would you prevent the LLM from answering when the required information isn't available?
 
@@ -642,4 +643,3 @@ For example, I can require structured output such as:
   "answerable": false,
   "answer": null
 }
-
