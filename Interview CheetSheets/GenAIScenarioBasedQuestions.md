@@ -1114,6 +1114,8 @@ Complex reasoning
         ↓
 Stronger Model
 
+```
+
 ## Q. When would you use RAG vs fine-tuning?
 
 ### Interview Answer
@@ -1161,4 +1163,3 @@ Need specialized behavior/style/task?
 Need both?
         ↓
 Fine-Tuned Model + RAG
-
