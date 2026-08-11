@@ -2,40 +2,32 @@
 
 ### Interview Answer
 
-First, I would identify **where the hallucination is coming from** instead of directly changing the model.
+First, I would identify **where the hallucination is coming from** instead of immediately changing the model.
 
-In production, I usually separate it into four areas:
+I would normally check four areas:
 
-1. **Retrieval problem** – the correct information is not being fetched.
-2. **Data/chunking problem** – the knowledge base has poor, outdated, or badly chunked data.
+1. **Retrieval problem** – the correct information is not being retrieved.
+2. **Data/chunking problem** – the knowledge base may contain outdated data or poor chunks.
 3. **Prompt problem** – the model is not clearly instructed to stay within the provided context.
-4. **Generation problem** – the model is still inventing information even when the context is correct.
+4. **Generation problem** – the context is correct, but the LLM is still generating unsupported information.
 
-If it is a knowledge-based application, my preferred production approach would be **RAG with strict grounding**.
+For a knowledge-based application, my preferred production approach would be **RAG with strict grounding**.
 
-I would retrieve relevant documents from a trusted knowledge base, pass only the useful context to the LLM, and explicitly instruct it:
+I would retrieve information from trusted sources and instruct the LLM to answer only from that context. If the answer is not present, the model should say that the information is unavailable instead of guessing.
 
-> Answer only from the provided context. If the information is not available, say that you don't know.
+Then I would improve retrieval using proper chunking, good embeddings, Top-K tuning, metadata filtering, and reranking if required.
 
-Then I would improve retrieval quality using good chunking, embeddings, Top-K tuning, metadata filters, and reranking if required.
+For factual applications, I would also use a **lower temperature** because I want predictable answers rather than creative ones.
 
-I would also keep the **temperature low** for factual use cases because I want consistency rather than creativity.
+For critical information such as amounts, dates, IDs, or transaction statuses, I would validate the LLM output against the source document, database, or API.
 
-For important outputs, I would add validation. For example, if the LLM extracts an amount, date, status, or trade ID, I can validate that value against the database or source document before returning it.
+I would also provide **citations/source references** wherever possible.
 
-I would also return **citations or source references** so the user can see where the answer came from.
+Finally, if retrieval confidence is low or no relevant information is found, I would use a safe fallback rather than allowing the model to generate an unsupported answer.
 
-If confidence is low or no relevant document is found, I would prefer a safe fallback such as:
+So my approach would be:
 
-"Information is not available in the provided data."
-
-instead of allowing the model to guess.
-
-Finally, I would monitor hallucination cases in production, store failed queries, and continuously improve the retrieval, prompt, and knowledge base.
-
-So my overall approach is:
-
-**Ground the model → improve retrieval → constrain generation → validate critical outputs → monitor failures.**
+**Ground the model → improve retrieval → constrain generation → validate critical outputs → monitor hallucinations.**
 
 ### Simple Flow
 
@@ -45,21 +37,95 @@ Retrieve Trusted Context
 ↓
 Check Retrieval Quality
 ↓
-LLM with Strict Grounding Prompt
+LLM with Grounding Instructions
 ↓
 Validate Critical Information
 ↓
-Return Answer + Source
+Answer + Source
 ↓
-Fallback if Confidence is Low
+Fallback if Evidence is Insufficient
+
+---
 
 ### Follow-up Questions
 
-1. What would you do if the retrieved documents themselves contain incorrect information?
-2. How would you measure hallucination in a RAG application?
-3. Does lowering temperature completely remove hallucination?
-4. What would you do if RAG retrieves the correct document but the LLM still gives the wrong answer?
+#### 1. What would you do if the retrieved documents themselves contain incorrect information?
+
+Then it is mainly a **data-quality problem, not an LLM problem**.
+
+I would validate the knowledge base before ingestion, remove outdated or duplicate documents, and maintain metadata such as document version, source, and last-updated date.
+
+If multiple sources conflict, I would prioritize an authoritative source such as the production database or approved business documentation.
+
+For critical applications, I would also introduce human approval for updating the knowledge base.
+
+**Key point:** RAG can ground an LLM, but if the source itself is wrong, the grounded answer can still be wrong.
+
+---
+
+#### 2. How would you measure hallucination in a RAG application?
+
+I would create an **evaluation dataset** containing questions with known expected answers and source documents.
+
+Then I would measure two things separately:
+
+- **Retrieval quality** – did we retrieve the document containing the correct answer?
+- **Answer faithfulness** – is the generated answer actually supported by the retrieved context?
+
+I would also track production metrics such as unsupported-answer rate, fallback rate, user feedback, and failed queries.
+
+For important systems, I would periodically manually review a sample of responses as well.
+
+This helps identify whether the issue is with **retrieval or generation** instead of treating everything as an LLM problem.
+
+---
+
+#### 3. Does lowering temperature completely remove hallucination?
+
+No.
+
+Lower temperature makes the output **more deterministic and less creative**, but it does not guarantee correctness.
+
+For example, if the model receives incorrect context, it can confidently produce the same incorrect answer every time even with temperature set very low.
+
+So I would use low temperature for factual tasks, but combine it with:
+
+**trusted context + grounding + retrieval quality + validation + fallback.**
+
+Temperature is only one control, not the complete solution.
+
+---
+
+#### 4. What would you do if RAG retrieves the correct document but the LLM still gives the wrong answer?
+
+Then I know that retrieval is probably working, so I would investigate the **generation side**.
+
+First, I would check whether the retrieved chunk actually contains enough surrounding context.
+
+Then I would improve the prompt and explicitly tell the model to answer only from the retrieved context.
+
+I might also reduce irrelevant context because too much information can confuse the model.
+
+For structured information, I would ask for structured output and validate the result programmatically.
+
+If necessary, I could also test a stronger model.
+
+So I would troubleshoot it as:
+
+Correct retrieval
+↓
+Check chunk/context
+↓
+Improve grounding prompt
+↓
+Reduce irrelevant context
+↓
+Validate output
+↓
+Evaluate model if still incorrect
+
+---
 
 ### Quick Revision
 
-> Reduce hallucination by grounding the LLM with trusted context, improving retrieval, constraining the prompt, validating important outputs, and using a safe fallback instead of guessing.
+> Hallucination reduction = trusted data + strong retrieval + grounded prompt + low creativity + output validation + safe fallback.
