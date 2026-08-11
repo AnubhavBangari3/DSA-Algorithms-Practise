@@ -1163,3 +1163,202 @@ Need specialized behavior/style/task?
 Need both?
         ↓
 Fine-Tuned Model + RAG
+
+```
+
+## Q. When would you use an AI Agent instead of normal RAG/LLM?
+
+### Interview Answer
+
+I would use an **AI Agent when the system needs to make decisions, use tools, and perform multiple steps dynamically**, instead of only generating an answer.
+
+A normal **LLM** is enough when I need tasks like summarization, generation, extraction, or classification.
+
+I would use **RAG** when the main requirement is to retrieve external or private knowledge and answer questions based on that information.
+
+But I would use an **Agent** when the workflow is:
+
+**Understand the goal → decide what to do → choose a tool → execute it → check the result → decide the next step.**
+
+For example, suppose the user says:
+
+> "Investigate why Trade 123 failed and create a support ticket if action is required."
+
+Here, the system may need to:
+
+1. Get trade details from the database.
+2. Check the latest settlement status through an API.
+3. Use RAG to retrieve relevant settlement documentation.
+4. Analyze the failure reason.
+5. Decide whether a ticket is required.
+6. Create the ticket using an API.
+7. Return the RCA and ticket ID.
+
+Since the next step depends on the result of the previous step, an **agentic workflow makes sense**.
+
+In production, I would give the agent only controlled tools, maintain state between steps, define retries and termination conditions, and validate important actions.
+
+For sensitive actions such as payments, deleting data, or sending important communications, I would add **human approval before execution**.
+
+I would not use an agent for every GenAI problem because agents introduce additional **latency, cost, complexity, and failure points**.
+
+So my simple rule is:
+
+**LLM = generate or understand.**  
+**RAG = retrieve knowledge and answer.**  
+**Agent = decide, use tools, and take actions.**
+
+### Simple Flow
+
+```text
+User Request
+     ↓
+   Agent
+     ↓
+Understand Goal
+     ↓
+Decide Next Action
+     ↓
+Choose Tool
+     ↓
+┌─────────────────┐
+│ RAG             │
+│ Database        │
+│ API             │
+│ External Tools  │
+└─────────────────┘
+     ↓
+Execute Tool
+     ↓
+Observe Result
+     ↓
+Need Another Action?
+   ↙           ↘
+ Yes           No
+  ↓             ↓
+Next Step    Final Response
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. What is the difference between an Agent and RAG?
+
+RAG is mainly used to **retrieve external knowledge and give that context to an LLM**.
+
+```text
+Question
+↓
+Retrieve Documents
+↓
+LLM
+↓
+Answer
+```
+
+An Agent can **make decisions and perform actions using different tools**.
+
+```text
+Goal
+↓
+Decide Action
+↓
+Choose Tool
+↓
+Execute
+↓
+Observe Result
+↓
+Decide Next Action
+```
+
+An important point is that an agent can actually use **RAG as one of its tools**.
+
+So RAG provides knowledge, while an agent orchestrates decisions and actions.
+
+---
+
+#### 2. What components would you normally have in an AI Agent?
+
+For a production agent, I would normally consider:
+
+- **LLM** – understands the request and helps decide actions.
+- **Tools** – APIs, databases, RAG, search, etc.
+- **State** – stores information between workflow steps.
+- **Conditional decisions** – decides the next step based on previous results.
+- **Retries and error handling** – handles temporary failures.
+- **Termination conditions** – prevents infinite loops.
+- **Human-in-the-loop** – approval for sensitive actions.
+
+For example, the state could contain:
+
+```text
+trade_id = 123
+status = "FAILED"
+reason = "Insufficient Securities"
+ticket_created = false
+```
+
+The agent uses this state while moving through the workflow.
+
+---
+
+#### 3. How would you prevent an Agent from running forever?
+
+I would never allow an unrestricted agent loop in production.
+
+I would define controls such as:
+
+- Maximum number of steps
+- Maximum retries
+- Tool timeouts
+- Overall workflow timeout
+- Clear success and failure termination conditions
+
+For example:
+
+```text
+Maximum Steps = 10
+Tool Retries = 2
+Overall Timeout = 30 seconds
+```
+
+If the agent still cannot complete the task, I would terminate the workflow and return a controlled fallback or send it for human review.
+
+This also prevents unnecessary LLM API cost.
+
+---
+
+#### 4. When would you NOT use an Agent?
+
+I would not use an agent when the workflow is **simple or deterministic**.
+
+For example:
+
+> "Summarize this document."
+
+A normal LLM is enough.
+
+Or:
+
+> "What does our settlement failure policy say?"
+
+RAG is enough.
+
+I don't need an agent with planning and multiple tool calls for these cases.
+
+Agents introduce additional:
+
+- Latency
+- Cost
+- Complexity
+- Failure points
+
+So I would use an agent only when the application genuinely requires **dynamic decisions, multiple tools, or actions**.
+
+---
+
+### Quick Revision
+
+> LLM generates, RAG retrieves knowledge and answers, while an Agent dynamically decides what to do, uses tools, maintains state, and takes multi-step actions.
