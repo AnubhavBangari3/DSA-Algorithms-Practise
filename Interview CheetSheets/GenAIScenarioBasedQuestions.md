@@ -395,3 +395,127 @@ The correct chunk size is the one that gives the best retrieval quality for my d
 ### Quick Revision
 
 > Irrelevant RAG retrieval = check chunking and embeddings first, then tune Top-K, filters, hybrid search, reranking, and evaluate retrieval separately.
+
+## Q. Correct information exists in the documents, but RAG still gives the wrong answer. What would you check?
+
+### Interview Answer
+
+If the correct information exists in the documents but RAG still gives the wrong answer, I would debug the pipeline in stages instead of assuming the LLM is the problem.
+
+First, I would check **whether the correct chunk is actually being retrieved**.
+
+If it is not being retrieved, then I would investigate:
+- chunking
+- embeddings
+- Top-K
+- metadata filters
+- hybrid search
+- reranking
+
+That means the issue is mainly a **retrieval or data/chunking problem**.
+
+If the correct chunk is being retrieved, then I would check whether the chunk contains **enough surrounding context**. Sometimes the exact answer is present, but important information is split across two chunks.
+
+Next, I would inspect the **prompt**. I would make sure the LLM is clearly instructed to answer only from the retrieved context and not rely on its own assumptions.
+
+I would also check whether I am passing too much irrelevant context. Even if the correct chunk is present, several noisy chunks can confuse the model.
+
+If retrieval and prompt are both correct, then I would treat it as a **generation problem**. I could reduce temperature, test a stronger model, or ask for structured output if the response follows a fixed format.
+
+For critical fields such as trade status, amount, or ID, I would validate the final answer against the source document or database.
+
+So my debugging order would be:
+
+**Check retrieval → check chunk/context → check prompt → remove noisy context → check generation → validate output.**
+
+### Simple Flow
+
+Correct Answer Exists in Documents
+↓
+Was Correct Chunk Retrieved?
+↓
+No → Fix Retrieval / Chunking
+↓
+Yes
+↓
+Does Chunk Have Enough Context?
+↓
+Check Prompt + Remove Noise
+↓
+LLM Generates Answer
+↓
+Validate Against Source
+
+---
+
+### Follow-up Questions
+
+#### 1. What if the correct document is retrieved but the correct chunk is not?
+
+Then I would treat it as a **chunking problem**.
+
+The answer may have been split across chunk boundaries, or the chunks may be too large and diluted with unrelated information.
+
+I would experiment with:
+- smaller or larger chunk sizes
+- chunk overlap
+- heading-based chunking
+- semantic chunking
+
+Then I would evaluate whether the expected answer-containing chunk appears in the Top-K results.
+
+---
+
+#### 2. What if the correct chunk is in the Top-K but ranked very low?
+
+Then retrieval is partially working, but the **ranking quality is weak**.
+
+I would improve it using:
+- a better embedding model
+- hybrid search
+- query rewriting
+- metadata filtering
+- a reranker
+
+For example:
+
+Vector Search → Top 20  
+Reranker → Best 5  
+LLM → Answer
+
+This reduces the chance that irrelevant chunks dominate the context.
+
+---
+
+#### 3. Can too much context cause a wrong answer?
+
+Yes.
+
+More context does not always mean better accuracy.
+
+If I send many irrelevant chunks along with the correct one, the LLM may focus on conflicting or unrelated information.
+
+So I would keep the context focused and pass only the most relevant chunks.
+
+This also helps reduce **latency and token cost**.
+
+---
+
+#### 4. How would you prove that the issue is with generation and not retrieval?
+
+I would inspect the retrieved context manually or through evaluation.
+
+If the correct answer is clearly present in the retrieved chunk, but the LLM still produces something unsupported or incorrect, then retrieval is working and the problem is mainly **prompting or generation**.
+
+At that point, I would test:
+- stricter grounding instructions
+- lower temperature
+- less noisy context
+- structured output
+- a stronger model
+
+---
+
+### Quick Revision
+
+> If the answer exists but RAG is wrong, check in order: retrieval, chunk context, prompt, context noise, generation, then validate against the source.
