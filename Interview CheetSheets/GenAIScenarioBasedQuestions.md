@@ -2411,7 +2411,7 @@ I would also log these failures so I can improve the prompt, schema, or model co
 ### Quick Revision
 
 > Don't trust prompt-only JSON: use structured output, validate with a schema like Pydantic, validate business rules too, and retry or fallback when validation fails.
-```
+
 
 ## Q. LLM API fails or becomes unavailable. How would you design the application?
 
