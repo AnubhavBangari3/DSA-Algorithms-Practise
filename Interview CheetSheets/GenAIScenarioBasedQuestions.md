@@ -1576,3 +1576,219 @@ If important information is missing, I would ask for clarification instead of gu
 ### Quick Revision
 
 > Wrong tool selection is usually fixed by clearer tool descriptions, fewer overlapping tools, explicit routing, input validation, and testing tool-selection accuracy with real examples.
+
+```
+
+## Q. Agent is choosing the wrong tool. How would you fix it?
+
+### Interview Answer
+
+If an agent is choosing the wrong tool, I would first identify **why the tool choice is ambiguous**.
+
+Usually, the issue is one of these:
+
+- Tool descriptions are unclear.
+- Multiple tools have overlapping responsibilities.
+- The prompt does not clearly say when each tool should be used.
+- Too many tools are exposed at once.
+- Tool arguments are not being validated.
+
+First, I would improve the **tool descriptions**.
+
+For example, instead of:
+
+```text
+get_data()
+```
+
+I would define:
+
+```text
+get_trade_status(trade_id)
+
+Use this tool only to get the latest settlement status of a trade.
+Do not use it for policy or documentation questions.
+```
+
+This makes the decision boundary much clearer for the model.
+
+Second, I would reduce overlapping tools.
+
+For example, if I have:
+
+```text
+search_trade()
+find_trade()
+get_trade()
+```
+
+I would either combine them or clearly separate their responsibilities.
+
+Third, if I have many tools, I would add a **routing step** before execution.
+
+For example:
+
+```text
+Trade status question → Trade API
+Policy question → RAG
+Create support ticket → Ticket API
+```
+
+For important workflows, I would also validate the selected tool and its arguments before actually executing it.
+
+If the action is sensitive, I would add a human approval step.
+
+Finally, I would log incorrect tool selections and create an evaluation dataset like:
+
+```text
+User Query
+Expected Tool
+Expected Arguments
+```
+
+Then I can measure whether changes to the prompt, tool descriptions, or model actually improved tool-selection accuracy.
+
+So my production approach would be:
+
+**Clear tool descriptions → remove overlap → restrict available tools → validate selection and arguments → evaluate failed cases.**
+
+### Simple Flow
+
+```text
+User Request
+↓
+Understand Intent
+↓
+Filter Relevant Tools
+↓
+Choose Tool
+↓
+Validate Tool + Arguments
+↓
+Execute
+↓
+Check Result
+↓
+Retry / Fallback if Needed
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. Would you let the LLM see every tool available in the system?
+
+No, not always.
+
+If there are only a few clearly different tools, that may be fine.
+
+But if I have many tools, I would expose only the tools relevant to the current intent or workflow.
+
+For example:
+
+```text
+User asks about settlement status
+
+Allowed tools:
+- get_trade
+- get_settlement_status
+- search_settlement_docs
+```
+
+I would not expose unrelated tools.
+
+This improves tool-selection accuracy and also reduces security risk.
+
+---
+
+#### 2. What if two tools are very similar?
+
+I would first check whether I actually need both.
+
+If possible, I would combine them into one clear tool.
+
+For example:
+
+```text
+search_trade()
+find_trade()
+get_trade()
+```
+
+could become:
+
+```text
+get_trade(trade_id)
+```
+
+If both tools are required, I would make the descriptions and input conditions clearly different.
+
+The model should understand exactly when to use each one.
+
+---
+
+#### 3. What if the agent chooses the correct tool but passes wrong arguments?
+
+Then I would treat that as an **argument validation problem**.
+
+I would define a strict schema.
+
+For example:
+
+```json
+{
+  "trade_id": "string",
+  "date": "YYYY-MM-DD"
+}
+```
+
+Before tool execution, I would validate:
+
+- required fields
+- data types
+- allowed values
+- permissions
+
+If something important is missing, I would ask for the missing information rather than allowing the agent to guess.
+
+---
+
+#### 4. How would you measure tool-selection accuracy?
+
+I would create a small test dataset containing:
+
+```text
+User Query
+Expected Tool
+Expected Arguments
+```
+
+For example:
+
+```text
+Query:
+"What is the settlement status of Trade 123?"
+
+Expected Tool:
+get_settlement_status
+
+Expected Arguments:
+trade_id = 123
+```
+
+Then I would track:
+
+- Tool-selection accuracy
+- Argument accuracy
+- Invalid tool-call rate
+- Tool execution failure rate
+
+I would also add real production failures to this dataset so the evaluation keeps improving over time.
+
+---
+
+### Quick Revision
+
+> Fix wrong tool selection by making tool boundaries clear, reducing overlapping tools, restricting the available tool set, validating arguments, and testing against real tool-routing examples.
+
+```
