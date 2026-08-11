@@ -2010,3 +2010,208 @@ I would never let the agent continue indefinitely because that can create **high
 > Prevent agent loops using clear termination conditions, state and tool history, duplicate-call detection, retry and step limits, timeouts, and a safe fallback.
 
 ```
+## Q. How would you design a workflow where the AI takes different actions based on conditions?
+
+### Interview Answer
+
+I would design it as a **stateful workflow with clear conditional branches**.
+
+First, I would define the shared **state** that moves through the workflow.
+
+For example:
+
+```text
+trade_id
+trade_status
+failure_reason
+ticket_required
+ticket_id
+```
+
+Then I would break the workflow into small steps or nodes.
+
+For example:
+
+```text
+Get Trade Details
+↓
+Check Status
+↓
+Analyze Failure
+↓
+Decide Next Action
+```
+
+The next step would depend on the current state.
+
+For example:
+
+```text
+If status = SETTLED
+→ Return success
+
+If status = FAILED
+→ Analyze failure
+
+If failure needs manual action
+→ Create ticket
+
+If information is missing
+→ Ask for input or send for human review
+```
+
+For conditions that are simple and deterministic, I would use normal Python logic.
+
+For example:
+
+```python
+if trade_status == "SETTLED":
+    return "complete"
+elif trade_status == "FAILED":
+    return "investigate"
+```
+
+I would use the LLM only where reasoning is actually needed, such as understanding an unstructured error message or generating a root-cause summary.
+
+For a workflow with multiple branches, retries, and state, I could use **LangGraph** because it supports nodes, edges, conditional routing, loops, and state management.
+
+In production, I would also add:
+
+- Retry limits
+- Timeouts
+- Fallback paths
+- Termination conditions
+- Human approval for sensitive actions
+
+So my preferred approach is:
+
+**State → condition check → choose branch → execute action → update state → validate → stop when the goal is complete.**
+
+### Simple Flow
+
+```text
+User Request
+↓
+Initialize State
+↓
+Get Trade Details
+↓
+Check Status
+↓
+      ┌──────────────────────┐
+      │                      │
+   SETTLED                 FAILED
+      │                      │
+Return Success         Analyze Failure
+                             ↓
+                     Ticket Required?
+                       ↙          ↘
+                     Yes          No
+                      ↓            ↓
+                Create Ticket    Return RCA
+                      ↓
+                   Validate
+                      ↓
+                     STOP
+```
+
+---
+
+### Follow-up Questions
+
+#### 1. Why would you use LangGraph here?
+
+I would use LangGraph when the workflow is not simply linear.
+
+For example:
+
+```text
+Step A
+↓
+Check Condition
+↙          ↘
+Step B    Step C
+```
+
+LangGraph is useful because it supports:
+
+- Shared state
+- Conditional edges
+- Multiple branches
+- Retries
+- Cycles
+- Termination conditions
+
+For a very simple fixed workflow, normal Python or a simple chain would be enough.
+
+---
+
+#### 2. Should the LLM decide every condition?
+
+No.
+
+If the condition is deterministic, I would use normal code.
+
+For example:
+
+```python
+if amount > 10000:
+    require_approval = True
+```
+
+This is faster, cheaper, and more reliable than asking an LLM to decide it.
+
+I would use the LLM only for conditions that need semantic understanding or reasoning.
+
+---
+
+#### 3. How would you maintain state in this workflow?
+
+I would keep a structured state object and update it after every step.
+
+For example:
+
+```json
+{
+  "trade_id": "TR123",
+  "status": "FAILED",
+  "failure_reason": "Insufficient securities",
+  "ticket_required": true,
+  "ticket_id": null
+}
+```
+
+Each node reads what it needs from the state and updates the relevant fields.
+
+For long-running workflows, I could persist the state using a database or checkpoint mechanism so the workflow can resume after failure.
+
+---
+
+#### 4. What if one branch fails?
+
+I would define error handling at that step.
+
+For temporary failures:
+
+```text
+Tool Failure
+↓
+Retry with Limit
+```
+
+For permanent failures:
+
+```text
+Invalid Data / Permission Error
+↓
+Fallback / Human Review
+```
+
+I would also preserve the current state and execution trace so I can debug the failure without restarting the full workflow.
+
+---
+
+### Quick Revision
+
+> Use shared state and conditional branches, keep simple decisions deterministic, use the LLM only for reasoning, and add retries, fallbacks, and clear termination conditions.
+
