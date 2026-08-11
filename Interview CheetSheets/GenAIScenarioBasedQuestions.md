@@ -129,3 +129,145 @@ Evaluate model if still incorrect
 ### Quick Revision
 
 > Hallucination reduction = trusted data + strong retrieval + grounded prompt + low creativity + output validation + safe fallback.
+
+## Q. How would you verify the correctness of an LLM response?
+
+### Interview Answer
+
+I would **not trust the LLM response directly**, especially for factual or business-critical use cases.
+
+I would verify correctness at multiple levels depending on the type of response.
+
+First, if I am using **RAG**, I would check whether the answer is actually supported by the retrieved documents. This helps me separate two problems:
+
+- **Retrieval correctness** – did we retrieve the right information?
+- **Generation correctness** – did the LLM correctly use that information?
+
+Second, wherever possible, I would use **deterministic validation** instead of another LLM.
+
+For example, if the LLM returns a trade ID, amount, settlement status, or customer information, I can verify it directly against the database, API, or business rules.
+
+For structured responses, I would also validate the **schema and data types**. For example, if I expect JSON containing `trade_id`, `status`, and `amount`, I can validate that before accepting the response.
+
+For testing, I would maintain a **golden or reference dataset** containing questions, expected answers, and expected source documents. I can run the LLM against this dataset whenever I change the model, prompt, embedding model, or retrieval configuration.
+
+I can measure things like:
+
+- Retrieval accuracy
+- Answer correctness
+- Faithfulness to the context
+- Invalid/unsupported answer rate
+
+An **LLM-as-a-judge** can also help evaluate large numbers of responses, but I would use it as an additional signal, not as the only source of truth, because another LLM can also make mistakes.
+
+For high-risk decisions, I would add **human review**.
+
+So in production, my preferred approach is:
+
+**Source verification + deterministic checks + automated evaluation + human review for critical cases.**
+
+### Simple Flow
+
+User Query
+↓
+Retrieve Source
+↓
+LLM Generates Response
+↓
+Check Response Against Source
+↓
+Business Rule / Database / Schema Validation
+↓
+Confidence / Evaluation
+↓
+Return Response
+
+For critical cases:
+
+Validation Fails
+↓
+Fallback / Human Review
+
+---
+
+### Follow-up Questions
+
+#### 1. What is a golden dataset?
+
+A golden dataset is a **small, high-quality evaluation dataset where I already know the correct answers**.
+
+For example:
+
+Question:
+"What is the settlement status of Trade 123?"
+
+Expected Answer:
+"Pending"
+
+Expected Source:
+Trade record/document containing that status.
+
+Whenever I change the prompt, model, chunking, or retrieval configuration, I run the same test cases again.
+
+This helps me detect whether the new version improved the system or introduced regressions.
+
+---
+
+#### 2. What is faithfulness in RAG?
+
+Faithfulness means:
+
+**Is the generated answer actually supported by the retrieved context?**
+
+For example, suppose the retrieved document says:
+
+`Settlement Status: Pending`
+
+but the LLM answers:
+
+`The trade has successfully settled.`
+
+The answer may sound convincing, but it is **not faithful to the context**.
+
+So correctness and faithfulness are related, but faithfulness specifically checks whether the LLM stayed grounded in the provided evidence.
+
+---
+
+#### 3. Would you use another LLM to verify the response?
+
+Yes, but I would **not depend on it as the only validator**.
+
+An LLM-as-a-judge is useful when evaluating thousands of responses for things like relevance, faithfulness, or answer quality.
+
+But because the judge itself is an LLM, it can also make mistakes.
+
+So my preference would be:
+
+**Deterministic validation when possible → LLM judge as an additional signal → human review for critical cases.**
+
+For example, checking a trade status directly from SQL is much more reliable than asking another LLM whether the status looks correct.
+
+---
+
+#### 4. How would you verify an answer when there is no exact ground truth?
+
+If there is no exact expected answer, I would verify whether the response is **supported by authoritative sources**.
+
+For RAG, I can check whether every important claim is grounded in the retrieved documents.
+
+I can also use business rules, consistency checks, user feedback, and human evaluation.
+
+For open-ended responses, I would evaluate dimensions such as:
+
+- Relevance
+- Faithfulness
+- Completeness
+- Safety
+
+So the validation strategy depends on whether the task is **factual, structured, or open-ended**.
+
+---
+
+### Quick Revision
+
+> Verify LLM responses using trusted sources, deterministic business checks, golden datasets, faithfulness evaluation, and human review for critical cases.
