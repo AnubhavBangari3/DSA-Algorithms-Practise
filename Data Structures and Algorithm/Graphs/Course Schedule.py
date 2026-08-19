@@ -1,64 +1,57 @@
+
 class Solution:
-    def solve(self, board: List[List[str]]) -> None:
+    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
+        graph = [[] for _ in range(numCourses)]
+        visit = [0] * numCourses
 
-        m = len(board)
-        n = len(board[0])
+        # Build graph: course -> prerequisites
+        for course, pre in prerequisites:
+            graph[course].append(pre)
 
-        # DFS to mark border-connected O's as safe
-        def dfs(r, c):
+        def dfs(course):
+            # Cycle detected
+            if visit[course] == -1:
+                return False
 
-            # Stop if out of bounds
-            # or current cell is not O
-            if (r < 0 or c < 0 or r >= m  or c >= n  or board[r][c] != "O"
-            ):
-                return
+            # Already completely processed
+            if visit[course] == 1:
+                return True
 
-            # Mark current O as safe / visited
-            board[r][c] = "V"
+            # Mark as currently visiting
+            visit[course] = -1
 
-            # Visit all 4 directions
-            dfs(r + 1, c)  # Down
-            dfs(r - 1, c)  # Up
-            dfs(r, c + 1)  # Right
-            dfs(r, c - 1)  # Left
+            # Check all prerequisites
+            for pre in graph[course]:
+                if not dfs(pre):
+                    return False
 
-        # Step 1:
-        # Find all border-connected O's
-        for i in range(m):
-            for j in range(n):
+            # Mark as completely visited
+            visit[course] = 1
+            return True
 
-                # Start DFS only from border O's
-                if (
-                    board[i][j] == "O"
-                    and (   i == 0 or i == m - 1  or j == 0  or j == n - 1
-                    )
-                ):
-                    dfs(i, j)
+        # Check every course
+        for course in range(numCourses):
+            if not dfs(course):
+                return False
 
-        # Step 2:
-        # Remaining O's are surrounded
-        for i in range(m):
-            for j in range(n):
-
-                if board[i][j] == "O":
-                    board[i][j] = "X"
-
-        # Step 3:
-        # Restore safe cells
-        for i in range(m):
-            for j in range(n):
-
-                if board[i][j] == "V":
-                    board[i][j] = "O"
-
+        return True
 '''
-1. Any `'O'` connected to the **border** cannot be surrounded.
-2. Traverse all border cells.
-3. If a border cell is `'O'`, run DFS from it.
-4. Mark every connected safe `'O'` as `'V'`.
-5. After DFS:
-   - Remaining `'O'` cells are surrounded → convert them to `'X'`.
-6. Convert all temporary `'V'` cells back to `'O'`.
-7. Modify the board in-place.
+1. Build a directed graph from each course to its prerequisites.
+2. Use DFS to detect a cycle.
+3. Maintain three states:
+   - `0` → not visited
+   - `-1` → currently visiting
+   - `1` → completely visited
+4. If DFS reaches a node with state `-1`, a cycle exists → return `False`.
+5. If a node is already fully visited (`1`), return `True`.
+6. After checking all prerequisites of a course, mark it as `1`.
+7. Run DFS for every course.
+8. If no cycle is found, return `True`.
 
+
+Complexity
+Time Complexity: O(V + E)
+Space Complexity: O(V + E)
+
+Where V = courses and E = prerequisites.
 '''
