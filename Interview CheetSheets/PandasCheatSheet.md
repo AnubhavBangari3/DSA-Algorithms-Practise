@@ -1877,20 +1877,37 @@ result = pd.DataFrame(
 
 **Q1. What is the difference between Series and DataFrame?**
 Series is one-dimensional; DataFrame is two-dimensional.
+
+
 **Q2. What is the difference between loc and iloc?**
 `loc` uses labels; `iloc` uses integer positions.
+
+
 **Q3. What is the difference between merge and concat?**
 `merge` combines data using keys; `concat` stacks or aligns DataFrames along an axis.
+
+
 **Q4. What is the difference between apply and map?**
 `Series.map()` performs element-wise transformations; `DataFrame.apply()` applies functions across rows or columns.
+
+
 **Q5. What is the difference between agg and transform?**
 `agg` summarizes; `transform` returns values aligned with the original rows.
+
+
 **Q6. What is the difference between count and size?**
 `count()` excludes missing values; `size` includes them.
+
+
 **Q7. What is the difference between pivot and pivot_table?**
 `pivot` requires unique combinations; `pivot_table` supports aggregation.
+
+
+
 **Q8. What is the difference between fillna and dropna?**
 `fillna` replaces missing values; `dropna` removes rows/columns according to missing-value rules.
+
+
 **Q9. How do you find duplicates?**
 
 ```python
