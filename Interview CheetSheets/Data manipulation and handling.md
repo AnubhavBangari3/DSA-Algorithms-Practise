@@ -218,3 +218,77 @@ result = df.groupby("CustomerID")["Amount"].agg(
 ).reset_index()
 ```
 **Interview Tip:** Practice explaining `groupby()` + `agg()`, `transform()`, `merge()`, filtering, and calculated columns. These are directly aligned with Surya's emphasis on practical data manipulation and transformation.
+
+
+### Q16. You have transaction data with CustomerID, Category, and Amount. How would you find the highest-spending customer in each category?
+
+**Answer:** I would first calculate total spending for each customer within each category, then select the customer with the highest total in each category.
+```python
+result = df.groupby(["Category", "CustomerID"])["Amount"].sum().reset_index()
+result = result.sort_values("Amount", ascending=False)
+top_customers = result.drop_duplicates("Category")
+```
+**Explanation:** The first `groupby()` calculates customer-wise spending within each category. Sorting puts the highest amount first, and `drop_duplicates()` keeps the top customer from each category.
+**Follow-up:** What if two customers have the same highest amount? → This code returns only one. To include ties, I would use `groupby("Category")["Amount"].rank(method="min", ascending=False)` and filter rank 1.
+
+### Q17. You have transaction data with CustomerID, Date, and Amount. How would you calculate a running total for each customer?
+
+**Answer:** I would sort transactions by date and use `groupby()` with `cumsum()` to calculate the cumulative amount.
+```python
+df["Date"] = pd.to_datetime(df["Date"])
+df = df.sort_values(["CustomerID", "Date"])
+df["RunningTotal"] = df.groupby("CustomerID")["Amount"].cumsum()
+```
+**Explanation:** `cumsum()` keeps adding transaction amounts in date order. `groupby()` ensures each customer's running total is calculated separately.
+**Follow-up:** What if two transactions have the same date? → I would sort by an additional field such as TransactionID or timestamp to ensure a consistent order.
+
+
+### Q18. You have employee data with EmployeeID, Department, and Salary. How would you increase salaries by 10% for IT employees and 5% for HR employees?
+
+**Answer:** I would use NumPy `select()` to apply different salary increases based on department.
+```python
+import numpy as np
+conditions = [
+    df["Department"] == "IT",
+    df["Department"] == "HR"
+]
+increases = np.select(conditions, [0.10, 0.05], default=0)
+df["NewSalary"] = df["Salary"] * (1 + increases)
+```
+**Explanation:** `np.select()` checks department conditions and assigns the corresponding percentage. Employees from other departments receive no increase.
+**Follow-up:** Why not use a for loop? → Vectorized operations are generally faster and easier to read for large DataFrames.
+
+
+### Q19. You have two DataFrames containing yesterday's and today's customer records. How would you identify new customers and customers whose salary has changed?
+
+**Answer:** I would merge the two datasets using CustomerID and compare the salary values.
+```python
+merged = today.merge(
+    yesterday,
+    on="CustomerID",
+    how="left",
+    suffixes=("_today", "_yesterday"),
+    indicator=True,
+    validate="one_to_one"
+)
+new_customers = merged[merged["_merge"] == "left_only"]
+changed = merged[
+    (merged["_merge"] == "both") &
+    (merged["Salary_today"] != merged["Salary_yesterday"])
+]
+```
+**Explanation:** A left join retains today's records. `_merge` identifies customers missing from yesterday's dataset. Comparing salary columns identifies changes.
+**Follow-up:** What if a customer existed yesterday but is missing today? → Use an outer join instead of a left join to identify removed customers too. Missing salary values need explicit comparison rules.
+
+
+### Q20. You receive sales data with Product, Region, and Amount. How would you find the top 2 products by total sales in each region?
+
+**Answer:** I would calculate total sales for each region-product combination, sort the totals, and select the top two products within each region.
+```python
+sales = df.groupby(["Region", "Product"])["Amount"].sum().reset_index()
+sales = sales.sort_values(["Region", "Amount"], ascending=[True, False])
+top2 = sales.groupby("Region").head(2)
+```
+**Explanation:** `groupby()` calculates total sales per product in each region. Sorting places the highest-selling products first, and `head(2)` selects two products per region.
+**Follow-up:** What if multiple products tie for second place? → `head(2)` returns exactly two rows. To include ties, I would use `rank(method="min", ascending=False)` and filter rank ≤ 2.
+**Interview Tip:** Be comfortable explaining the difference between `groupby().agg()`, `groupby().transform()`, `cumsum()`, `rank()`, `merge()` and `np.select()`. These cover several common data manipulation patterns without requiring complicated code.
