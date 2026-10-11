@@ -87,120 +87,68 @@ df["Fee"] = df["Amount"] * rates
 
 
 
-### Q6. You receive 50 Excel files every day from different departments. Some files have different column names, missing values, and duplicate records. How would you build an automated ETL pipeline?
-
-
-**Answer:** I would create a reusable pipeline to read all files, standardize column names, validate required fields, remove exact duplicates, combine the data, and save the processed output. Invalid records would be logged separately.
-
-
+### Q6. You have an Excel file containing employee data. Some rows have missing salaries and duplicate employee IDs. How would you clean the data?
+**Answer:** I would read the Excel file using Pandas, check missing values and duplicates, and clean them according to business requirements.
 ```python
-from pathlib import Path
 import pandas as pd
-frames = []
-for file in Path("input").glob("*.xlsx"):
-    df = pd.read_excel(file)
-    df.columns = df.columns.str.strip().str.lower()
-    df = df.rename(columns={"customer_id": "customerid"})
-    if not {"customerid", "amount"}.issubset(df.columns):
-        print(f"Invalid schema: {file.name}")
-        continue
-    df["source_file"] = file.name
-    frames.append(df)
-if not frames:
-    raise ValueError("No valid input files")
-result = pd.concat(frames, ignore_index=True)
-result = result.drop_duplicates()
-result.to_parquet("processed.parquet", index=False)
+df = pd.read_excel("employees.xlsx")
+print(df.isnull().sum())
+print(df[df.duplicated("EmployeeID", keep=False)])
+df = df.dropna(subset=["EmployeeID"])
+df = df.drop_duplicates(subset=["EmployeeID"], keep="first")
 ```
-**Explanation:** `glob()` finds Excel files, `rename()` standardizes columns, `concat()` combines DataFrames, and Parquet provides efficient storage. In production, I would also validate data types and business keys before loading.
-**Follow-up:** What if one file fails? → Log the filename and error, quarantine that file, and continue processing other files if business rules allow.
-
-
-### Q7. You have a 5 GB CSV file that cannot fit into memory. How would you process it using Pandas?
-
-
-**Answer:** I would read the file in chunks, select only required columns, optimize data types, and aggregate each chunk instead of loading the complete file.
-
-
+**Explanation:** `isnull().sum()` identifies missing values. `dropna()` removes records without an employee ID. `drop_duplicates()` keeps one record per employee.
+**Follow-up:** What about missing salaries? → I would check the business requirement before filling or removing them. I would not automatically replace missing salaries with zero.
+### Q7. You have two Excel files: one contains employee IDs and salaries, and the other contains employee IDs and departments. How would you combine them?
+**Answer:** I would use Pandas `merge()` with EmployeeID as the common key.
 ```python
-totals = {}
-for chunk in pd.read_csv(
-    "transactions.csv",
-    usecols=["Department", "Amount"],
-    dtype={"Department": "category", "Amount": "float64"},
-    chunksize=100_000
-):
-    summary = chunk.groupby("Department", observed=True)["Amount"].sum()
-    for dept, amount in summary.items():
-        totals[dept] = totals.get(dept, 0) + amount
-result = pd.Series(totals, name="TotalAmount")
-```
-**Explanation:** `chunksize` processes 100,000 rows at a time. Each chunk is aggregated, so memory usage stays relatively low. Only department totals are stored.
-**Follow-up:** What if the dataset is too large even for chunk-based joins? → Consider DuckDB, database-side processing, or PySpark depending on infrastructure and data size.
-
-
-### Q8. You have two datasets: system transactions and bank transactions. How would you identify missing transactions and amount mismatches?
-
-
-**Answer:** I would validate transaction IDs, perform an outer join, and classify records as missing from either system or having mismatched amounts.
-```python
-result = system.merge(
-    bank, on="TransactionID", how="outer",
-    suffixes=("_system", "_bank"),
-    indicator=True, validate="one_to_one"
-)
-result["Status"] = np.select(
-    [
-        result["_merge"].eq("left_only"),
-        result["_merge"].eq("right_only"),
-        result["Amount_system"].ne(result["Amount_bank"])
-    ],
-    ["Missing in Bank", "Missing in System", "Amount Mismatch"],
-    default="Matched"
-)
-exceptions = result[result["Status"] != "Matched"]
-```
-**Explanation:** An outer join retains records from both sources. `_merge` identifies missing transactions, while amount comparison identifies mismatches. `validate="one_to_one"` prevents duplicate IDs from silently multiplying rows.
-**Follow-up:** What if amounts differ by ₹0.01 due to rounding? → Apply an agreed tolerance, such as `abs(system_amount - bank_amount) <= 0.01`, instead of exact comparison.
-
-
-### Q9. Your dataset contains multiple updates for the same customer. How would you retain only the latest record for each customer?
-
-
-**Answer:** I would convert timestamps to datetime, sort records by update time, and keep the latest record per customer.
-
-
-```python
-df["UpdatedAt"] = pd.to_datetime(df["UpdatedAt"], errors="coerce")
-latest = (
-    df.sort_values("UpdatedAt")
-      .drop_duplicates(subset=["CustomerID"], keep="last")
+employees = pd.read_excel("employees.xlsx")
+departments = pd.read_excel("departments.xlsx")
+result = pd.merge(
+    employees,
+    departments,
+    on="EmployeeID",
+    how="left"
 )
 ```
-**Explanation:** Sorting places newer updates after older ones. `drop_duplicates(keep="last")` retains the latest record for each customer.
-**Follow-up:** What if two records have identical timestamps? → Define a deterministic tie-breaker, such as version number or ingestion sequence, before deduplication. Missing timestamps should be handled explicitly.
-
-
-### Q10. Your automated ETL pipeline processes one million records daily. What would you do if some records fail validation or the database becomes unavailable?
-
-
-**Answer:** I would separate row-level validation failures from pipeline-level failures. Invalid records should go to a rejection file, while database failures should trigger logging, retry mechanisms, and alerts.
+**Explanation:** A left join keeps all employees and adds department details wherever EmployeeID matches.
+**Follow-up:** What if EmployeeID does not match? → Department will be NaN. I can identify these rows using `result[result["Department"].isna()]`, assuming Department is populated in the reference file.
+### Q8. You have sales data with EmployeeID, Department, and SalesAmount. How would you calculate total sales and average sales for each department?
+**Answer:** I would use `groupby()` with `agg()` to calculate multiple summaries.
 ```python
-import logging
-import time
-logging.basicConfig(level=logging.INFO)
-def load_with_retry(df, load_func, retries=3):
-    for attempt in range(retries):
-        try:
-            load_func(df)
-            return
-        except (ConnectionError, TimeoutError) as error:
-            logging.warning(f"Attempt {attempt + 1}: {error}")
-            if attempt == retries - 1:
-                logging.exception("Database load failed")
-                raise
-            time.sleep(2 ** attempt)
+result = df.groupby("Department")["SalesAmount"].agg(
+    ["sum", "mean", "count"]
+).reset_index()
+result.columns = [
+    "Department", "TotalSales", "AverageSales", "Count"
+]
 ```
-**Explanation:** The pipeline retries temporary connection failures using exponential backoff. If all retries fail, it raises the error so the scheduler or monitoring system can alert the team.
-**Follow-up:** What if retrying inserts duplicate records? → Use idempotent loads, unique transaction keys, and database upserts or transactional staging.
-**Interview Tip:** For a 1-hour Uber interview, expect follow-up questions on why you chose a particular approach, how you validate results, and how your solution handles large datasets or production failures.
+**Explanation:** `groupby()` groups employees by department. `sum` calculates total sales, `mean` calculates average sales, and `count` counts non-null sales values.
+**Follow-up:** What if I want only departments with sales above 50,000? →
+```python
+result = result[result["TotalSales"] > 50000]
+```
+### Q9. You receive multiple Excel files every day. How would you combine them into one DataFrame?
+**Answer:** I would use `glob` to identify Excel files, read them using Pandas, and combine them using `concat()`.
+```python
+import glob
+import pandas as pd
+files = glob.glob("data/*.xlsx")
+dfs = [pd.read_excel(file) for file in files]
+combined = pd.concat(dfs, ignore_index=True)
+combined.to_excel("combined.xlsx", index=False)
+```
+**Explanation:** `glob()` finds the files, `read_excel()` reads each file, and `concat()` combines their rows.
+**Follow-up:** What if column names differ? → I would standardize column names using `rename()` before concatenation. Otherwise, Pandas may create separate columns.
+### Q10. You have a DataFrame with Amount and TransactionType. How would you create a new column that marks transactions as High Value or Normal?
+**Answer:** I would use NumPy `where()` for conditional data transformation instead of writing a loop.
+```python
+import numpy as np
+df["Category"] = np.where(
+    df["Amount"] >= 10000,
+    "High Value",
+    "Normal"
+)
+```
+**Explanation:** `np.where()` checks the condition for every row. Amounts of 10,000 or above are marked High Value; the remaining amounts are marked Normal.
+**Follow-up:** Why use NumPy instead of a for loop? → NumPy supports vectorized operations, which are generally faster and easier to maintain for large datasets.
