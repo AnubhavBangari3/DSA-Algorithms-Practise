@@ -152,3 +152,69 @@ df["Category"] = np.where(
 ```
 **Explanation:** `np.where()` checks the condition for every row. Amounts of 10,000 or above are marked High Value; the remaining amounts are marked Normal.
 **Follow-up:** Why use NumPy instead of a for loop? → NumPy supports vectorized operations, which are generally faster and easier to maintain for large datasets.
+
+### Q11. You have transaction data containing CustomerID, Amount, and Status. How would you calculate the total successful transaction amount for each customer?
+
+**Answer:** I would first filter successful transactions and then use `groupby()` to calculate the total amount for each customer.
+```python
+successful = df[df["Status"] == "Success"]
+result = successful.groupby("CustomerID")["Amount"].sum().reset_index()
+```
+**Explanation:** First, we select only successful transactions. Then `groupby()` combines transactions belonging to the same customer, and `sum()` calculates their total amount.
+**Follow-up:** How would you find the top 5 customers? →
+```python
+top5 = result.sort_values("Amount", ascending=False).head(5)
+```
+
+### Q12. You have a DataFrame with EmployeeID, Department, and Salary. How would you find employees earning more than their department's average salary?
+
+**Answer:** I would use `groupby()` with `transform()` to calculate each department's average salary and compare individual salaries against it.
+```python
+df["DeptAvg"] = df.groupby("Department")["Salary"].transform("mean")
+result = df[df["Salary"] > df["DeptAvg"]]
+```
+**Explanation:** `transform("mean")` calculates the department average while keeping the original number of rows. We can then compare every employee's salary with their department average.
+**Follow-up:** Difference between `agg()` and `transform()`? → `agg()` returns a summarized result, while `transform()` returns values aligned with the original rows.
+
+### Q13. You have sales data with Product, Quantity, and Price. How would you calculate revenue for each product and identify the highest-revenue product?
+
+**Answer:** I would create a Revenue column using multiplication, then group by Product and calculate total revenue.
+```python
+df["Revenue"] = df["Quantity"] * df["Price"]
+result = df.groupby("Product")["Revenue"].sum().reset_index()
+result = result.sort_values("Revenue", ascending=False)
+top_product = result.head(1)
+```
+**Explanation:** Multiplication creates a new calculated column. `groupby()` adds revenue for each product, and sorting identifies the highest-revenue product.
+**Follow-up:** What if Quantity is negative? → It might represent a return. I would confirm the business rule before excluding it.
+
+### Q14. You have two DataFrames containing customer transactions and customer details. How would you calculate total transaction amount by customer city?
+
+**Answer:** I would merge the datasets using CustomerID and then group by City.
+```python
+merged = pd.merge(
+    transactions, customers,
+    on="CustomerID", how="left",
+    validate="many_to_one"
+)
+result = merged.groupby("City")["Amount"].sum().reset_index()
+```
+**Explanation:** `merge()` combines customer details with transactions. `groupby("City")` calculates total transaction amounts city-wise. `validate="many_to_one"` checks that each customer ID is unique in the customer master.
+**Follow-up:** What if a customer is missing from the customer table? → The City will be NaN. I would identify unmatched customers before preparing the final report.
+
+
+### Q15. You have transaction data with CustomerID, Amount, and Date. How would you find customers whose total transaction amount exceeds ₹50,000?
+
+**Answer:** I would group transactions by CustomerID, calculate the sum, and filter customers based on the total.
+```python
+result = df.groupby("CustomerID")["Amount"].sum().reset_index()
+result = result[result["Amount"] > 50000]
+```
+**Explanation:** `groupby()` combines all transactions belonging to each customer. `sum()` calculates their total amount, and filtering selects customers above ₹50,000.
+**Follow-up:** How would you also count transactions per customer? →
+```python
+result = df.groupby("CustomerID")["Amount"].agg(
+    ["sum", "count"]
+).reset_index()
+```
+**Interview Tip:** Practice explaining `groupby()` + `agg()`, `transform()`, `merge()`, filtering, and calculated columns. These are directly aligned with Surya's emphasis on practical data manipulation and transformation.
